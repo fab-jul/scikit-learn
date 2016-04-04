@@ -237,8 +237,6 @@ class BaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
         self : object
             Returns self.
         """
-        assert False, 'Does this work'
-
         # Validate or convert input data
         X = check_array(X, accept_sparse="csc", dtype=DTYPE)
         y = check_array(y, accept_sparse='csc', ensure_2d=False, dtype=None)
