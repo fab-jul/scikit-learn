@@ -80,9 +80,15 @@ def _generate_sample_indices(random_state, n_samples):
 
     return sample_indices
 
-def _generate_unsampled_indices(random_state, n_samples):
+def _generate_unsampled_indices(random_state, n_samples,
+                                bootstrap_indices_generator=None):
     """Private function used to forest._set_oob_score function."""
-    sample_indices = _generate_sample_indices(random_state, n_samples)
+    if bootstrap_indices_generator is None:
+        sample_indices = _generate_sample_indices(random_state, n_samples)
+    else:
+        sample_indices = bootstrap_indices_generator(
+                check_random_state(random_state), n_samples)
+
     sample_counts = bincount(sample_indices, minlength=n_samples)
     unsampled_mask = sample_counts == 0
     indices_range = np.arange(n_samples)
@@ -91,12 +97,11 @@ def _generate_unsampled_indices(random_state, n_samples):
     return unsampled_indices
 
 def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
+                          bootstrap_indices_generator=None,
                           verbose=0, class_weight=None):
     """Private function used to fit a single tree in parallel."""
     if verbose > 1:
         print("building tree %d of %d" % (tree_idx + 1, n_trees))
-
-    print('Parallel Build Tree w/ sample_weight %s c_w %s' % (str(sample_weight), str(class_weight)))
 
     if forest.bootstrap:
         n_samples = X.shape[0]
@@ -105,11 +110,14 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
         else:
             curr_sample_weight = sample_weight.copy()
 
-        indices = _generate_sample_indices(tree.random_state, n_samples)
+        if bootstrap_indices_generator is None:
+            indices = _generate_sample_indices(tree.random_state, n_samples)
+        else:
+            indices = bootstrap_indices_generator(
+                check_random_state(tree.random_state), n_samples)
+
         sample_counts = bincount(indices, minlength=n_samples)  # [2, 4] -> [0, 0, 1, 0, 1, ...]
         curr_sample_weight *= sample_counts
-
-        print('curr_sample_weight is %s' % str(curr_sample_weight))
 
         if class_weight == 'subsample':
             with warnings.catch_warnings():
@@ -322,6 +330,7 @@ class BaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
                              backend="threading")(
                 delayed(_parallel_build_trees)(
                     t, self, X, y, sample_weight, i, len(trees),
+                    bootstrap_indices_generator=self.bootstrap_indices_generator,
                     verbose=self.verbose, class_weight=self.class_weight)
                 for i, t in enumerate(trees))
 
@@ -426,7 +435,8 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
 
         for estimator in self.estimators_:
             unsampled_indices = _generate_unsampled_indices(
-                estimator.random_state, n_samples)
+                estimator.random_state, n_samples,
+                bootstrap_indices_generator=self.bootstrap_indices_generator)
             p_estimator = estimator.predict_proba(X[unsampled_indices, :],
                                                   check_input=False)
 
