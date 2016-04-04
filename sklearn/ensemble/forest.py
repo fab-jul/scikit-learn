@@ -76,7 +76,7 @@ MAX_INT = np.iinfo(np.int32).max
 def _generate_sample_indices(random_state, n_samples):
     """Private function used to _parallel_build_trees function."""
     random_instance = check_random_state(random_state)
-    sample_indices = random_instance.randint(0, n_samples, n_samples)
+    sample_indices = random_instance.randint(0, n_samples, size=n_samples)
 
     return sample_indices
 
@@ -96,6 +96,8 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
     if verbose > 1:
         print("building tree %d of %d" % (tree_idx + 1, n_trees))
 
+    print('Parallel Build Tree w/ sample_weight %s c_w %s' % (str(sample_weight), str(class_weight)))
+
     if forest.bootstrap:
         n_samples = X.shape[0]
         if sample_weight is None:
@@ -106,6 +108,8 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
         indices = _generate_sample_indices(tree.random_state, n_samples)
         sample_counts = bincount(indices, minlength=n_samples)
         curr_sample_weight *= sample_counts
+
+        print('curr_sample_weight is %s' % str(curr_sample_weight))
 
         if class_weight == 'subsample':
             with warnings.catch_warnings():
