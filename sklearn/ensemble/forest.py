@@ -106,7 +106,7 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
             curr_sample_weight = sample_weight.copy()
 
         indices = _generate_sample_indices(tree.random_state, n_samples)
-        sample_counts = bincount(indices, minlength=n_samples)  # [2, 4] -> [0, 0, 1, 0, 1, ...]
+        sample_counts = bincount(indices, minlength=n_samples)  # [2, 4] -> [0, 0, 1, 0, 1, ...]
         curr_sample_weight *= sample_counts
 
         print('curr_sample_weight is %s' % str(curr_sample_weight))
