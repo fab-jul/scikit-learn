@@ -106,7 +106,7 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
             curr_sample_weight = sample_weight.copy()
 
         indices = _generate_sample_indices(tree.random_state, n_samples)
-        sample_counts = bincount(indices, minlength=n_samples)
+        sample_counts = bincount(indices, minlength=n_samples)  # [2, 4] -> [0, 0, 1, 0, 1, ...]
         curr_sample_weight *= sample_counts
 
         print('curr_sample_weight is %s' % str(curr_sample_weight))
@@ -139,6 +139,7 @@ class BaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
                  n_estimators=10,
                  estimator_params=tuple(),
                  bootstrap=False,
+                 bootstrap_indices_generator=None,
                  oob_score=False,
                  n_jobs=1,
                  random_state=None,
@@ -151,6 +152,7 @@ class BaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
             estimator_params=estimator_params)
 
         self.bootstrap = bootstrap
+        self.bootstrap_indices_generator = bootstrap_indices_generator
         self.oob_score = oob_score
         self.n_jobs = n_jobs
         self.random_state = random_state
@@ -387,6 +389,7 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
                  n_estimators=10,
                  estimator_params=tuple(),
                  bootstrap=False,
+                 bootstrap_indices_generator=None,
                  oob_score=False,
                  n_jobs=1,
                  random_state=None,
@@ -399,6 +402,7 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
             n_estimators=n_estimators,
             estimator_params=estimator_params,
             bootstrap=bootstrap,
+            bootstrap_indices_generator=bootstrap_indices_generator,
             oob_score=oob_score,
             n_jobs=n_jobs,
             random_state=random_state,
@@ -903,6 +907,7 @@ class RandomForestClassifier(ForestClassifier):
                  max_features="auto",
                  max_leaf_nodes=None,
                  bootstrap=True,
+                 bootstrap_indices_generator=None,
                  oob_score=False,
                  n_jobs=1,
                  random_state=None,
@@ -917,6 +922,7 @@ class RandomForestClassifier(ForestClassifier):
                               "max_features", "max_leaf_nodes",
                               "random_state"),
             bootstrap=bootstrap,
+            bootstrap_indices_generator=bootstrap_indices_generator,
             oob_score=oob_score,
             n_jobs=n_jobs,
             random_state=random_state,
