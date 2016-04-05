@@ -117,6 +117,11 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
                 check_random_state(tree.random_state), n_samples)
 
         sample_counts = bincount(indices, minlength=n_samples)  # [2, 4] -> [0, 0, 1, 0, 1, ...]
+        print('n_samples %d; sample_counts %d; #0s %d; weight %d' %
+                (n_samples, sample_counts.size,
+                    len([el for el in sample_counts if el == 0]),
+                    curr_sample_weight.size))
+
         curr_sample_weight *= sample_counts
 
         if class_weight == 'subsample':
