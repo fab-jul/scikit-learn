@@ -472,9 +472,10 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
         for k in range(self.n_outputs_):
             num_no_oob = (predictions[k].sum(axis=1) == 0).sum()
             if num_no_oob > 0:
-                warn("%d inputs do not have OOB scores. "
+                warn("%2.1f inputs do not have OOB scores. "
                      "This probably means too few trees were used "
-                     "to compute any reliable oob estimates." % num_no_oob)
+                     "to compute any reliable oob estimates." % 
+                     (float(num_no_oob)/n_samples))
 
             decision = (predictions[k] /
                         predictions[k].sum(axis=1)[:, np.newaxis])
