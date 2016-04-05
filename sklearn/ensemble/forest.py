@@ -168,6 +168,15 @@ class BaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
         self.warm_start = warm_start
         self.class_weight = class_weight
 
+    def __getstate__(self):
+        """
+        Called by pickle, we remove the `bootstrap_indices_generator` function
+        because it cannot be pickled.
+        """
+        d = dict(self.__dict__)
+        del d['bootstrap_indices_generator']
+        return d
+
     def apply(self, X):
         """Apply trees in the forest to X, return leaf indices.
 
