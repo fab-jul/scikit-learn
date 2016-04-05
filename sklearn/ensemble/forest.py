@@ -122,6 +122,8 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
                     len([el for el in sample_counts if el == 0]),
                     curr_sample_weight.size))
 
+        print('c_w is %s' % class_weight)
+
         curr_sample_weight *= sample_counts
 
         if class_weight == 'subsample':
