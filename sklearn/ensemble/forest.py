@@ -444,6 +444,13 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
 
         oob_decision_function = []
         oob_score = 0.0
+
+        # 2D, for one-output case: predictions[1] is a (n_samples x n_features) matrix
+        # containing at each index I the sum of the prediction probability of
+        # all trees that were not trained with sample I.
+        #
+        # If some inputs were trained on all trees, the entry is 0 and a warning
+        # is printed.
         predictions = []
 
         for k in range(self.n_outputs_):
@@ -463,14 +470,17 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
                 predictions[k][unsampled_indices, :] += p_estimator[k]
 
         for k in range(self.n_outputs_):
-            if (predictions[k].sum(axis=1) == 0).any():
-                warn("Some inputs do not have OOB scores. "
+            num_no_oob = (predictions[k].sum(axis=1) == 0).sum()
+            if num_no_oob > 0:
+                warn("%d inputs do not have OOB scores. "
                      "This probably means too few trees were used "
-                     "to compute any reliable oob estimates.")
+                     "to compute any reliable oob estimates." % num_no_oob)
 
             decision = (predictions[k] /
                         predictions[k].sum(axis=1)[:, np.newaxis])
             oob_decision_function.append(decision)
+
+            # argmax gives index of maximum, i.e. predicted label
             oob_score += np.mean(y[:, k] ==
                                  np.argmax(predictions[k], axis=1), axis=0)
 
