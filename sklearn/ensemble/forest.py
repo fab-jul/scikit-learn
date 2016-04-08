@@ -571,7 +571,6 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
             The predicted classes.
         """
         proba = self.predict_proba(X)
-        print('Proba: %s' % str(proba))
 
         if self.n_outputs_ == 1:
             # take returns an array with the elements at the given indices.
@@ -625,8 +624,6 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
 
         # Reduce
         proba = all_proba[0]
-        
-        print('\n'.join(str(x) for x in all_proba))
 
         if self.n_outputs_ == 1:
             for j in range(1, len(all_proba)):
