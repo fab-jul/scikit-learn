@@ -626,6 +626,8 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
         # Reduce
         proba = all_proba[0]
 
+        map(print, all_proba)
+
         if self.n_outputs_ == 1:
             for j in range(1, len(all_proba)):
                 proba += all_proba[j]
