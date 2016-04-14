@@ -117,12 +117,6 @@ def _parallel_build_trees(tree, forest, X, y, sample_weight, tree_idx, n_trees,
                 check_random_state(tree.random_state), n_samples)
 
         sample_counts = bincount(indices, minlength=n_samples)  # [2, 4] -> [0, 0, 1, 0, 1, ...]
-        print('n_samples %d; sample_counts %d; #0s %d; weight %d' %
-                (n_samples, sample_counts.size,
-                    len([el for el in sample_counts if el == 0]),
-                    curr_sample_weight.size))
-
-        print('c_w is %s' % class_weight)
 
         curr_sample_weight *= sample_counts
 
@@ -627,7 +621,7 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
 
         if self.n_outputs_ == 1:
             N = len(self.estimators_) / 2
-            proba = _combine_lowest_entropy(all_proba, N)
+            proba = self._combine_lowest_entropy(all_proba, N)
             
         else:
             for j in range(1, len(all_proba)):
@@ -639,7 +633,7 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
 
         return proba
 
-    def _combine_lowest_entropy(prs, N):
+    def _combine_lowest_entropy(self, prs, N):
         def indices_of_lowest_entropy(prs, n):
             """ Given a list of k mxm' matrices `pr` returns an mxk array 
             containing in each row `n` 1s corresponding to the `n` 
