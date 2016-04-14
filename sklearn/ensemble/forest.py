@@ -646,7 +646,8 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
                 return np.apply_along_axis(lambda row: np.bincount(row, minlength=k),
                             axis=1, arr=lowest_entropy)
 
-            lowest_entropy_indices = indices_of_lowest_entropy(proba, 10)
+            N = len(proba) / 2
+            lowest_entropy_indices = indices_of_lowest_entropy(proba, N)
 
             # use indices in lowest_entropy to sum only those elements in the
             # proba list of matrices that are in the list of lowest entropy
