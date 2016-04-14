@@ -154,7 +154,8 @@ class BaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
                  random_state=None,
                  verbose=0,
                  warm_start=False,
-                 class_weight=None):
+                 class_weight=None,
+                 lowest_entropy_selection=None):
         super(BaseForest, self).__init__(
             base_estimator=base_estimator,
             n_estimators=n_estimators,
@@ -168,6 +169,7 @@ class BaseForest(six.with_metaclass(ABCMeta, BaseEnsemble,
         self.verbose = verbose
         self.warm_start = warm_start
         self.class_weight = class_weight
+        self.lowest_entropy_selection = lowest_entropy_selection
 
     def __getstate__(self):
         """
@@ -414,7 +416,8 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
                  random_state=None,
                  verbose=0,
                  warm_start=False,
-                 class_weight=None):
+                 class_weight=None,
+                 lowest_entropy_selection=None):
 
         super(ForestClassifier, self).__init__(
             base_estimator,
@@ -427,7 +430,8 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
             random_state=random_state,
             verbose=verbose,
             warm_start=warm_start,
-            class_weight=class_weight)
+            class_weight=class_weight,
+            lowest_entropy_selection=lowest_entropy_selection)
 
     def _set_oob_score(self, X, y):
         """Compute out-of-bag score"""
@@ -620,9 +624,15 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
         proba = all_proba[0]
 
         if self.n_outputs_ == 1:
-            N = len(self.estimators_) / 2
-            proba = self._combine_lowest_entropy(all_proba, N)
-            
+            if self.lowest_entropy_selection is not None:
+                N = self.lowest_entropy_selection
+                proba = self._combine_lowest_entropy(all_proba, N)
+            else:
+                for j in range(1, len(all_proba)):
+                    proba += all_proba[j]
+
+                proba /= len(self.estimators_)
+
         else:
             for j in range(1, len(all_proba)):
                 for k in range(self.n_outputs_):
@@ -977,7 +987,8 @@ class RandomForestClassifier(ForestClassifier):
                  random_state=None,
                  verbose=0,
                  warm_start=False,
-                 class_weight=None):
+                 class_weight=None,
+                 lowest_entropy_selection=None):  # None or integer in 1...n_estimators
         super(RandomForestClassifier, self).__init__(
             base_estimator=DecisionTreeClassifier(),
             n_estimators=n_estimators,
@@ -992,7 +1003,8 @@ class RandomForestClassifier(ForestClassifier):
             random_state=random_state,
             verbose=verbose,
             warm_start=warm_start,
-            class_weight=class_weight)
+            class_weight=class_weight,
+            lowest_entropy_selection=lowest_entropy_selection)
 
         self.criterion = criterion
         self.max_depth = max_depth
