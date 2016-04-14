@@ -626,11 +626,32 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
         proba = all_proba[0]
 
         if self.n_outputs_ == 1:
-            for j in range(1, len(all_proba)):
-                proba += all_proba[j]
+            def indices_of_lowest_entropy(prs, n):
+                """ Given a list of k mxm' matrices `pr` returns an mxk array 
+                containing in each row `n` 1s corresponding to the `n` 
+                matrices in `pr` with lowest entropy. """
+                from scipy.special import entr
+                (m, _) = prs[0].shape
+                k = len(prs)
+                entropy = np.zeros((m, k))
+                for (i, pr) in enumerate(prs):
+                    pr_entr = entr(pr).sum(axis=1)
+                    entropy[:, i] = pr_entr
 
-            proba /= len(self.estimators_)
+                # np.partition(a, k) will place the k-th smallest element of a at a[k],
+                # smaller values in a[:k] and larger values in a[k+1:]
+                lowest_entropy = np.argpartition(entropy, n, axis=1)[:, :n]
 
+                # bincount converts indices of elements to 0,1 valued array
+                return np.apply_along_axis(lambda row: np.bincount(row, minlength=k),
+                            axis=1, arr=lowest_entropy)
+
+            lowest_entropy_indices = indices_of_lowest_entropy(proba, 10)
+
+            # use indices in lowest_entropy to sum only those elements in the
+            # proba list of matrices that are in the list of lowest entropy
+            print np.einsum('ij,jik->ik', lowest_entropy_indices, proba)
+            
         else:
             for j in range(1, len(all_proba)):
                 for k in range(self.n_outputs_):
