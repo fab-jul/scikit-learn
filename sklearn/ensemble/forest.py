@@ -634,6 +634,8 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
         return proba
 
     def _combine_lowest_entropy(self, prs, N):
+        N = int(N)
+
         def indices_of_lowest_entropy(prs, n):
             """ Given a list of k mxm' matrices `pr` returns an mxk array 
             containing in each row `n` 1s corresponding to the `n` 
