@@ -624,7 +624,13 @@ class ForestClassifier(six.with_metaclass(ABCMeta, BaseForest,
         proba = all_proba[0]
 
         if self.n_outputs_ == 1:
-            if self.lowest_entropy_selection is not None:
+            try:
+                # old trees loaded with pickle don't have this attribute
+                lws = self.lowest_entropy_selection
+            except AttributeError:
+                lws = None
+
+            if lws is not None:
                 N = self.lowest_entropy_selection
                 proba = self._combine_lowest_entropy(all_proba, N)
             else:
