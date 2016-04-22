@@ -400,7 +400,12 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         if hasattr(self, "classes_"):
             self.classes_ = None
 
+        print('Checking...')
+        self._print_mem()
         X, y = check_X_y(X, y, 'csr', dtype=np.float64, order="C")
+        self._print_mem()
+        print('Checking done...')
+
         n_samples, n_features = X.shape
 
         # labels can be encoded as float, int, or string literals
