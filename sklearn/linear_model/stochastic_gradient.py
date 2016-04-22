@@ -337,14 +337,23 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         self.classes_ = None
         self.n_jobs = int(n_jobs)
 
+    def _print_mem(self):
+        """ return the memory usage in percentage like top """
+        import psutil
+        process = psutil.Process(os.getpid())
+        print('memory usage is %f' % process.memory_percent())
+
+
     # BaseSGDClassifier
     def _partial_fit(self, X, y, alpha, C,
                      loss, learning_rate, n_iter,
                      classes, sample_weight,
                      coef_init, intercept_init):
         print('Checking...')
+        self._print_mem()
         X, y = check_X_y(X, y, accept_sparse='csr', dtype=np.float64, order="C",
                 warn_on_dtype=True)
+        self._print_mem()
         print('Checking done...')
 
         n_samples, n_features = X.shape
