@@ -252,6 +252,8 @@ def fit_binary(est, i, X, y, alpha, C, learning_rate, n_iter,
 
     The i'th class is considered the "positive" class.
     """
+    print('fit_binary')
+
     # if average is not true, average_coef, and average_intercept will be
     # unused
     y_i, coef, intercept, average_coef, average_intercept = \
