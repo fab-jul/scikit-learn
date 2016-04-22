@@ -340,6 +340,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
     def _print_mem(self):
         """ return the memory usage in percentage like top """
         import psutil
+        import os
         process = psutil.Process(os.getpid())
         print('memory usage is %f' % process.memory_percent())
 
