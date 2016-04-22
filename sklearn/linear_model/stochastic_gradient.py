@@ -337,11 +337,15 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         self.classes_ = None
         self.n_jobs = int(n_jobs)
 
+    # BaseSGDClassifier
     def _partial_fit(self, X, y, alpha, C,
                      loss, learning_rate, n_iter,
                      classes, sample_weight,
                      coef_init, intercept_init):
-        X, y = check_X_y(X, y, 'csr', dtype=np.float64, order="C")
+        print('Checking...')
+        X, y = check_X_y(X, y, accept_sparse='csr', dtype=np.float64, order="C",
+                warn_on_dtype=True)
+        print('Checking done...')
 
         n_samples, n_features = X.shape
 
