@@ -219,6 +219,8 @@ def _prepare_fit_binary(est, y, i):
 
     Returns y, coef, intercept.
     """
+    print 'PBF'
+
     y_i = np.ones(y.shape, dtype=np.float64, order="C")
     y_i[y != est.classes_[i]] = -1.0
     average_intercept = 0
@@ -337,6 +339,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
                                                 eta0=eta0, power_t=power_t,
                                                 warm_start=warm_start,
                                                 average=average)
+        print 'hi'
         self.class_weight = class_weight
         self.classes_ = None
         self.n_jobs = int(n_jobs)
