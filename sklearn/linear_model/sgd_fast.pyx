@@ -605,8 +605,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
             for i in range(n_samples):
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
-                with gil:
-                    print('xnnz %s' % str([x_data_ptr[i] for i in range(xnnz)]))
+#FJ
+#                with gil:
+#                    print('xnnz %s' % str([x_data_ptr[i] for i in range(xnnz)]))
 
                 p = w.dot(x_data_ptr, x_ind_ptr, xnnz) + intercept
                 if learning_rate == OPTIMAL:
