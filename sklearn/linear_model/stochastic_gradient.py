@@ -246,7 +246,7 @@ def _prepare_fit_binary(est, y, i):
     return y_i, coef, intercept, average_coef, average_intercept
 
 
-# FJ
+# FJ
 def fit_binary(est, i, X, y, alpha, C, learning_rate, n_iter,
                pos_weight, neg_weight, sample_weight):
     """Fit a single binary classifier.
