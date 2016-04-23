@@ -236,6 +236,9 @@ def _prepare_fit_binary(est, y, i):
     else:
         if not est.average:
             coef = est.coef_[i]
+            print 'Coeff'
+            print coef
+
             intercept = est.intercept_[i]
         else:
             coef = est.standard_coef_[i]
