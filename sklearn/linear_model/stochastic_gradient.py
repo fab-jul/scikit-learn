@@ -339,7 +339,6 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
                                                 eta0=eta0, power_t=power_t,
                                                 warm_start=warm_start,
                                                 average=average)
-        print 'hi'
         self.class_weight = class_weight
         self.classes_ = None
         self.n_jobs = int(n_jobs)
@@ -716,6 +715,7 @@ class SGDClassifier(BaseSGDClassifier, _LearntSelectorMixin):
                  epsilon=DEFAULT_EPSILON, n_jobs=1, random_state=None,
                  learning_rate="optimal", eta0=0.0, power_t=0.5,
                  class_weight=None, warm_start=False, average=False):
+        print 'hi'
         super(SGDClassifier, self).__init__(
             loss=loss, penalty=penalty, alpha=alpha, l1_ratio=l1_ratio,
             fit_intercept=fit_intercept, n_iter=n_iter, shuffle=shuffle,
