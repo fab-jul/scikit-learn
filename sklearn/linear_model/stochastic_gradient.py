@@ -219,16 +219,17 @@ def _prepare_fit_binary(est, y, i):
 
     Returns y, coef, intercept.
     """
-    print 'PBF'
-
     y_i = np.ones(y.shape, dtype=np.float64, order="C")
     y_i[y != est.classes_[i]] = -1.0
     average_intercept = 0
     average_coef = None
 
-    if len(est.classes_) == 2:
+    if len(est.classes_) == 2:  # we land here in the multi class SGD case
         if not est.average:
             coef = est.coef_.ravel()
+            print 'Coeff'
+            print coef
+
             intercept = est.intercept_[0]
         else:
             coef = est.standard_coef_.ravel()
@@ -238,9 +239,6 @@ def _prepare_fit_binary(est, y, i):
     else:
         if not est.average:
             coef = est.coef_[i]
-            print 'Coeff'
-            print coef
-
             intercept = est.intercept_[i]
         else:
             coef = est.standard_coef_[i]
@@ -275,6 +273,7 @@ def fit_binary(est, i, X, y, alpha, C, learning_rate, n_iter,
     seed = random_state.randint(0, np.iinfo(np.int32).max)
 
     if not est.average:
+        # coef are the weights
         return plain_sgd(coef, intercept, est.loss_function,
                          penalty_type, alpha, C, est.l1_ratio,
                          dataset, n_iter, int(est.fit_intercept),
