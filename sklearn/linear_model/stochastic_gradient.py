@@ -152,6 +152,7 @@ class BaseSGD(six.with_metaclass(ABCMeta, BaseEstimator, SparseCoefMixin)):
             raise ValueError("Shapes of X and sample_weight do not match.")
         return sample_weight
 
+    # FJ
     def _allocate_parameter_mem(self, n_classes, n_features, coef_init=None,
                                 intercept_init=None):
         """Allocate mem for parameters; initialize if provided."""
@@ -164,6 +165,7 @@ class BaseSGD(six.with_metaclass(ABCMeta, BaseEstimator, SparseCoefMixin)):
                                      "dataset. ")
                 self.coef_ = coef_init
             else:
+# FJ make higher dim
                 self.coef_ = np.zeros((n_classes, n_features),
                                       dtype=np.float64, order="C")
 
@@ -322,7 +324,9 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
                  fit_intercept=True, n_iter=5, shuffle=True, verbose=0,
                  epsilon=DEFAULT_EPSILON, n_jobs=1, random_state=None,
                  learning_rate="optimal", eta0=0.0, power_t=0.5,
-                 class_weight=None, warm_start=False, average=False):
+                 class_weight=None, warm_start=False, average=False,
+                 rbf=None):  # rbf can be a tuple (gamma, n_components),
+                             # compare sklearn.kernel_approximation.RBFSampler
 
         super(BaseSGDClassifier, self).__init__(loss=loss, penalty=penalty,
                                                 alpha=alpha, l1_ratio=l1_ratio,
@@ -338,6 +342,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         self.class_weight = class_weight
         self.classes_ = None
         self.n_jobs = int(n_jobs)
+        self.rbf = rbf
 
 
     # BaseSGDClassifier
@@ -710,7 +715,7 @@ class SGDClassifier(BaseSGDClassifier, _LearntSelectorMixin):
                  fit_intercept=True, n_iter=5, shuffle=True, verbose=0,
                  epsilon=DEFAULT_EPSILON, n_jobs=1, random_state=None,
                  learning_rate="optimal", eta0=0.0, power_t=0.5,
-                 class_weight=None, warm_start=False, average=False):
+                 class_weight=None, warm_start=False, average=False, rbf=None):
         print 'hi'
         super(SGDClassifier, self).__init__(
             loss=loss, penalty=penalty, alpha=alpha, l1_ratio=l1_ratio,
@@ -718,7 +723,7 @@ class SGDClassifier(BaseSGDClassifier, _LearntSelectorMixin):
             verbose=verbose, epsilon=epsilon, n_jobs=n_jobs,
             random_state=random_state, learning_rate=learning_rate, eta0=eta0,
             power_t=power_t, class_weight=class_weight, warm_start=warm_start,
-            average=average)
+            average=average, rbf=rbf)
 
     def _check_proba(self):
         check_is_fitted(self, "t_")
