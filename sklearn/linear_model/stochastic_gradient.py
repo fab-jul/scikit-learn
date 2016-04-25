@@ -326,7 +326,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
                  learning_rate="optimal", eta0=0.0, power_t=0.5,
                  class_weight=None, warm_start=False, average=False,
                  rbf=None):  # rbf can be a tuple (gamma, n_components),
-                             # compare sklearn.kernel_approximation.RBFSampler
+                             # compare sklearn.kernel_approximation.RBFSampler
 
         super(BaseSGDClassifier, self).__init__(loss=loss, penalty=penalty,
                                                 alpha=alpha, l1_ratio=l1_ratio,
