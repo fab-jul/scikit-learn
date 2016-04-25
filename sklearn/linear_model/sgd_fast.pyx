@@ -544,8 +544,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                double intercept_decay=1.0,
                int average=0):
 
-    print weights
-
     # get the data information into easy vars
     cdef Py_ssize_t n_samples = dataset.n_samples
     cdef Py_ssize_t n_features = weights.shape[0]
