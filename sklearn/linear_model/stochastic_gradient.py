@@ -215,7 +215,7 @@ class BaseSGD(six.with_metaclass(ABCMeta, BaseEstimator, SparseCoefMixin)):
 
 
 def _prepare_fit_binary(est, y, i):
-    """Initialization for fit_binary.
+    """**Initialization**, i.e. called once, for fit_binary.
 
     Returns y, coef, intercept.
     """
@@ -227,9 +227,6 @@ def _prepare_fit_binary(est, y, i):
     if len(est.classes_) == 2:  # we land here in the multi class SGD case
         if not est.average:
             coef = est.coef_.ravel()
-            print 'Coeff'
-            print coef
-
             intercept = est.intercept_[0]
         else:
             coef = est.standard_coef_.ravel()
