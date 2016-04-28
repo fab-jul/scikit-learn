@@ -571,10 +571,11 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     # end. If there is an RBF Sampler, the x_ind_ptr_rbf and the xnnz_rbf
     # variables always hold the same value, namely all indices from 0 to
     # n_components-1 and n_components, respectively.
-    cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
     cdef double *x_data_ptr_rbf = NULL
     cdef int *x_ind_ptr_rbf = NULL
     cdef int xnnz_rbf
+    cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
+    cdef np.ndarray[double, ndim=1, mode='c'] _x_ind_rbf
 
     # helper variables
     cdef bint infinity = False
@@ -627,8 +628,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_data_rbf_ptr = <double*>_x_data_rbf.data
 
         # these remain fixed because the RBF transformed X is hardly sparse.
-        cdef np.ndarray[double, ndim=1, mode='c'] _x_ind_rbf = np.arange(
-                0, rbf.n_components, dtype=double)
+        _x_ind_rbf = np.arange(0, rbf.n_components, dtype=double)
         x_ind_ptr_rbf = <double*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
