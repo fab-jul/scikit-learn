@@ -632,7 +632,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_ind_ptr_rbf = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
-        def update_rbf_vars():
+        cdef update_rbf_vars():
             """
             modifies `x_data_rbf_ptr` and `x_ind_rbf_ptr` by transforming x
             with the RBF sampler
@@ -640,7 +640,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
             pass
     else:
-        def update_rbf_vars():
+        cdef update_rbf_vars():
             """ just performs a simple reassign """
 #            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
             pass
