@@ -624,7 +624,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     if rbf is not None:
         # if there is an RBF, this is the memory that holds the current
         # transformed value in each iteration.
-        _x_data_rbf = np.zeros(rbf.n_components, dtype=double)
+        _x_data_rbf = np.zeros(rbf.n_components, dtype=np.double)
         x_data_rbf_ptr = <double*>_x_data_rbf.data
 
         # these remain fixed because the RBF transformed X is hardly sparse.
