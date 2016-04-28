@@ -658,7 +658,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                              &y, &sample_weight)
 
 
-                update_rbf_vars(x_data_ptr, x_indptr, xnnz)
+                update_rbf_vars(x_data_ptr, x_ind_ptr, xnnz)
 
                 p = w.dot(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf) + intercept
                 if learning_rate == OPTIMAL:
