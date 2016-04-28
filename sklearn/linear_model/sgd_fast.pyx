@@ -151,6 +151,7 @@ cdef class Hinge(Classification):
     def __init__(self, double threshold=1.0):
         self.threshold = threshold
 
+    # loss(f(xi), yi) where f(xi) = wTxi + b
     cdef double loss(self, double p, double y) nogil:
         cdef double z = p * y
         if z <= self.threshold:
@@ -341,7 +342,8 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
               int learning_rate, double eta0,
               double power_t,
               double t=1.0,
-              double intercept_decay=1.0):
+              double intercept_decay=1.0,
+              RBFSamplerInPlace rbf=None):
     """Plain SGD for generic loss functions and penalties.
 
     Parameters
@@ -417,7 +419,8 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           power_t,
                           t,
                           intercept_decay,
-                          0)
+                          average=0,
+                          rbf=rbf)
     return standard_weights, standard_intercept
 
 
@@ -542,7 +545,15 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                double power_t,
                double t=1.0,
                double intercept_decay=1.0,
-               int average=0):
+               int average=0,
+               RBFSamplerInPlace rbf=None):
+
+    if rbf is not None:
+        assert weights.shape[0] == rbf.n_components,\
+                'weights vector not scaled appropriately for RBF'
+        assert (average_weights is None or
+                average_weights.shape[0] == rbf.n_components),\
+                'average_weights vector not scaled appropriately for RBF'
 
     # get the data information into easy vars
     cdef Py_ssize_t n_samples = dataset.n_samples
@@ -553,10 +564,19 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef double *x_data_ptr = NULL
     cdef int *x_ind_ptr = NULL
     cdef double* ps_ptr = NULL
+    cdef int xnnz
+
+    # Values used in the RBF case. If there is no RBF Sampler, these will point
+    # to the above variables with the same name but without the '_rbf' at the
+    # end. If there is an RBF Sampler, the x_ind_ptr_rbf and the xnnz_rbf
+    # variables always hold the same value, namely all indices from 0 to
+    # n_components-1 and n_components, respectively.
+    cdef double *x_data_ptr_rbf = NULL
+    cdef int *x_ind_ptr_rbf = NULL
+    cdef int xnnz_rbf
 
     # helper variables
     cdef bint infinity = False
-    cdef int xnnz
     cdef double eta = 0.0
     cdef double p = 0.0
     cdef double update = 0.0
@@ -576,8 +596,11 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef np.ndarray[double, ndim = 1, mode = "c"] q = None
     cdef double * q_data_ptr = NULL
     if penalty_type == L1 or penalty_type == ELASTICNET:
+        assert rbf is None, 'Unsupported penalty for RBF'
+
         q = np.zeros((n_features,), dtype=np.float64, order="c")
         q_data_ptr = <double * > q.data
+
     cdef double u = 0.0
 
     if penalty_type == L2:
@@ -595,6 +618,34 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         optimal_init = 1.0 / (initial_eta0 * alpha)
 
     t_start = time()
+
+    if rbf is not None:
+        # if there is an RBF, this is the memory that holds the current
+        # transformed value in each iteration.
+        cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf = np.zeros(
+                n_comps, dtype=double)
+        x_data_rbf_ptr = <double*>_x_data_rbf.data
+
+        # these remain fixed because the RBF transformed X is hardly sparse.
+        cdef np.ndarray[double, ndim=1, mode='c'] _x_ind_rbf = np.arange(
+                0, rbf.n_components, dtype=double)
+        x_ind_ptr_rbf = <double*>_x_ind_rbf.data
+        xnnz_rbf = rbf.n_components
+
+        def update_rbf_vars(double* x_data_ptr, double* x_ind_ptr, int xnnz):
+            """
+            modifies `x_data_rbf_ptr` and `x_ind_rbf_ptr` by transforming x
+            with the RBF sampler
+            """
+            rbf.transform(X_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+    else:
+        def update_rbf_vars(double* x_data_ptr, double* x_ind_ptr, int xnnz):
+            """ just performs a simple reassign """
+            x_data_rbf_ptr = x_data_ptr
+            x_ind_rbf_ptr = x_ind_ptr
+            xnnz_rbf = xnnz
+
+
     with nogil:
         for epoch in range(n_iter):
             if verbose > 0:
@@ -606,7 +657,10 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
-                p = w.dot(x_data_ptr, x_ind_ptr, xnnz) + intercept
+
+                update_rbf_vars(x_data_ptr, x_indptr, xnnz)
+
+                p = w.dot(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf) + intercept
                 if learning_rate == OPTIMAL:
                     eta = 1.0 / (alpha * (optimal_init + t - 1))
                 elif learning_rate == INVSCALING:
@@ -621,12 +675,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     class_weight = weight_neg
 
                 if learning_rate == PA1:
-                    update = sqnorm(x_data_ptr, x_ind_ptr, xnnz)
+                    update = sqnorm(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf)
                     if update == 0:
                         continue
                     update = min(C, loss.loss(p, y) / update)
                 elif learning_rate == PA2:
-                    update = sqnorm(x_data_ptr, x_ind_ptr, xnnz)
+                    update = sqnorm(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf)
                     update = loss.loss(p, y) / (update + 0.5 / C)
                 else:
                     dloss = loss._dloss(p, y)
@@ -653,7 +707,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     # big: instead set the weights to zero
                     w.scale(max(0, 1.0 - ((1.0 - l1_ratio) * eta * alpha)))
                 if update != 0.0:
-                    w.add(x_data_ptr, x_ind_ptr, xnnz, update)
+                    w.add(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf, update)
                     if fit_intercept == 1:
                         intercept += update * intercept_decay
 
@@ -662,12 +716,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     # average weights, this is done regardless as to whether
                     # the update is 0
 
-                    w.add_average(x_data_ptr, x_ind_ptr, xnnz,
+                    w.add_average(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf,
                                   update, (t - average + 1))
                     average_intercept += ((intercept - average_intercept) /
                                           (t - average + 1))
 
                 if penalty_type == L1 or penalty_type == ELASTICNET:
+                    # FJ unmodified
                     u += (l1_ratio * eta * alpha)
                     l1penalty(w, q_data_ptr, x_ind_ptr, xnnz, u)
 
@@ -698,6 +753,68 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     w.reset_wscale()
 
     return weights, intercept, average_weights, average_intercept
+
+
+cdef class RBFSamplerInPlace:
+    cdef float gamma
+    cdef int n_components
+    cdef double[:, :] random_weights_
+    cdef double[:] random_offset_
+    cdef double factor_
+
+    def __init__(self, float gamma, int n_components):
+        self.gamma = gamma
+        self.n_components = n_components
+        self.random_weights_ = None
+        self.random_offset_ = None
+
+    cdef fit(self, int n_features)
+        random_state = np.random.RandomState()
+
+        self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
+            size=(n_features, self.n_components)))
+        self.random_offset_ = random_state.uniform(0, 2 * np.pi,
+                                                   size=self.n_components)
+
+        # calculate factor from step 4. below only once
+        self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
+
+    # returns int so that exceptions can be passed to caller
+    cdef int transform(self,
+            double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
+            double* x_data_ptr_rbf) except -1:  # output
+        """
+        Calculates
+        1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
+        2. projection += self.random_offset_
+        3. np.cos(projection, projection)  # second argument is output
+        4. projection *= np.sqrt(2.) / np.sqrt(self.n_components)
+        """
+        assert (self.random_weights_ is not None and
+                self.random_offset_ is not None),\
+                        'use fit() before transform_rbf()'
+
+        # current column in random_weights_
+        cdef int col
+
+        # current component when doing multiplication, see below
+        cdef int idx
+
+        # holds value for x_i * random_weights_[:, col] before it gets written
+        cdef double out_val
+
+        # iterate over columns of random_weights_
+        for col in range(self.n_components):
+            out_val = 0
+            # iterate over elements of x
+            for i in range(xnnz):
+                idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
+                out_val += x_data_ptr[i] * self.random_weights_[idx, col]  # 1.
+            out_val += self.random_offset_[col]  # 2.
+            out_val = np.cos(out_val)  # 3.
+            out_val *= self.factor_ # 4.
+
+            x_data_ptr_rbf[col] = out_val
 
 
 cdef bint any_nonfinite(double *w, int n) nogil:

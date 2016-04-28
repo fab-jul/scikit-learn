@@ -21,7 +21,7 @@ from ..utils.multiclass import _check_partial_fit_first_call
 from ..utils.validation import check_is_fitted
 from ..externals import six
 
-from .sgd_fast import plain_sgd, average_sgd
+from .sgd_fast import plain_sgd, average_sgd, RBFSamplerInPlace
 from ..utils.fixes import astype
 from ..utils import compute_class_weight
 from .sgd_fast import Hinge
@@ -155,7 +155,14 @@ class BaseSGD(six.with_metaclass(ABCMeta, BaseEstimator, SparseCoefMixin)):
     # FJ
     def _allocate_parameter_mem(self, n_classes, n_features, coef_init=None,
                                 intercept_init=None):
-        """Allocate mem for parameters; initialize if provided."""
+        """
+        Allocate mem for parameters; initialize if provided.
+
+        self.coef_  will contain n_features columns, the number of rows is
+                    n_classes if that's >2 and 0 otherwise
+        self.intercept_ will be of shape (n_classes, ) if thats >2 and (1, )
+                        otherwise
+        """
         if n_classes > 2:
             # allocate coef_ for multi-class
             if coef_init is not None:
@@ -165,7 +172,6 @@ class BaseSGD(six.with_metaclass(ABCMeta, BaseEstimator, SparseCoefMixin)):
                                      "dataset. ")
                 self.coef_ = coef_init
             else:
-# FJ make higher dim
                 self.coef_ = np.zeros((n_classes, n_features),
                                       dtype=np.float64, order="C")
 
@@ -271,6 +277,12 @@ def fit_binary(est, i, X, y, alpha, C, learning_rate, n_iter,
     # Windows
     seed = random_state.randint(0, np.iinfo(np.int32).max)
 
+    try:
+        rbf = est.rbf
+    except AttributeError:
+        print 'No RBF'
+        rbf = None
+
     if not est.average:
         # coef are the weights
         return plain_sgd(coef, intercept, est.loss_function,
@@ -279,7 +291,7 @@ def fit_binary(est, i, X, y, alpha, C, learning_rate, n_iter,
                          int(est.verbose), int(est.shuffle), seed,
                          pos_weight, neg_weight,
                          learning_rate_type, est.eta0,
-                         est.power_t, est.t_, intercept_decay)
+                         est.power_t, est.t_, intercept_decay, rbf)
 
     else:
         standard_coef, standard_intercept, average_coef, \
@@ -342,7 +354,11 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         self.class_weight = class_weight
         self.classes_ = None
         self.n_jobs = int(n_jobs)
-        self.rbf = rbf
+        if rbf is None:
+            self.rbf = None
+        else:
+            (gamma, n_components) = rbf
+            self.rbf = RBFSamplerInPlace(gamma, n_components)
 
 
     # BaseSGDClassifier
@@ -365,16 +381,20 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
                                                            self.classes_, y)
         sample_weight = self._validate_sample_weight(sample_weight, n_samples)
 
+        features_dim = n_features if self.rbf is None else self.rbf.n_components
         if self.coef_ is None or coef_init is not None:
-            self._allocate_parameter_mem(n_classes, n_features,
+            self._allocate_parameter_mem(n_classes, features_dim,
                                          coef_init, intercept_init)
-        elif n_features != self.coef_.shape[-1]:
+        elif features_dim != self.coef_.shape[-1]:
             raise ValueError("Number of features %d does not match previous "
                              "data %d." % (n_features, self.coef_.shape[-1]))
 
         self.loss_function = self._get_loss_function(loss)
         if self.t_ is None:
             self.t_ = 1.0
+
+        # prepare RBF if present
+        self.rbf.fit(n_features)
 
         # delegate to concrete training procedure
         if n_classes > 2:

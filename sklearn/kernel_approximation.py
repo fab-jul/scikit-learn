@@ -100,11 +100,11 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         X_new : array-like, shape (n_samples, n_components)
         """
         check_is_fitted(self, 'random_weights_')
-
         X = check_array(X, accept_sparse='csr')
-        projection = safe_sparse_dot(X, self.random_weights_)
+
+        projection = safe_sparse_dot(X, self.random_weights_)  # dot product
         projection += self.random_offset_
-        np.cos(projection, projection)
+        np.cos(projection, projection)  # second argument is output
         projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         return projection
 
