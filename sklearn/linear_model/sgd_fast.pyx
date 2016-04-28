@@ -640,6 +640,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 ##            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 #            pass
     else:
+        pass
 #        cdef update_rbf_vars():
 #            """ just performs a simple reassign """
 #            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
