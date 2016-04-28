@@ -797,9 +797,10 @@ cdef class RBFSamplerInPlace:
         3. np.cos(projection, projection)  # second argument is output
         4. projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         """
-        assert (self.random_weights_ is not None and
-                self.random_offset_ is not None),\
-                        'use fit() before transform_rbf()'
+        with gil:
+            assert (self.random_weights_ is not None and
+                    self.random_offset_ is not None),\
+                            'use fit() before transform_rbf()'
 
         # current column in random_weights_
         cdef int col
