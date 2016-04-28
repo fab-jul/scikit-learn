@@ -632,12 +632,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_ind_ptr_rbf = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
-        def update_rbf_vars(double* x_data_ptr, double* x_ind_ptr, int xnnz):
+        def update_rbf_vars():
             """
             modifies `x_data_rbf_ptr` and `x_ind_rbf_ptr` by transforming x
             with the RBF sampler
             """
-            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+            rbf.transform()
     else:
         def update_rbf_vars(double* x_data_ptr, double* x_ind_ptr, int xnnz):
             """ just performs a simple reassign """
@@ -658,7 +658,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
-                update_rbf_vars(x_data_ptr, x_ind_ptr, xnnz)
+                update_rbf_vars()
 
                 p = w.dot(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf) + intercept
                 if learning_rate == OPTIMAL:
