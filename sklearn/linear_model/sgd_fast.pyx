@@ -632,21 +632,21 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_ind_ptr_rbf = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
-        cdef update_rbf_vars():
-            """
-            modifies `x_data_rbf_ptr` and `x_ind_rbf_ptr` by transforming x
-            with the RBF sampler
-            """
-#            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
-            pass
+#        def update_rbf_vars():
+#            """
+#            modifies `x_data_rbf_ptr` and `x_ind_rbf_ptr` by transforming x
+#            with the RBF sampler
+#            """
+##            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+#            pass
     else:
-        cdef update_rbf_vars():
-            """ just performs a simple reassign """
+#        cdef update_rbf_vars():
+#            """ just performs a simple reassign """
 #            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
-            pass
-            #x_data_rbf_ptr = x_data_ptr
-            #x_ind_rbf_ptr = x_ind_ptr
-            #xnnz_rbf = xnnz
+#            pass
+#            #x_data_rbf_ptr = x_data_ptr
+#            #x_ind_rbf_ptr = x_ind_ptr
+#            #xnnz_rbf = xnnz
 
 
     with nogil:
@@ -660,7 +660,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
-                update_rbf_vars()
+                # update RBF variables
+                if rbf is not None:
+                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+                else:
+                    x_data_rbf_ptr = x_data_ptr
+                    x_ind_rbf_ptr = x_ind_ptr
+                    xnnz_rbf = xnnz
 
                 p = w.dot(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf) + intercept
                 if learning_rate == OPTIMAL:
