@@ -637,7 +637,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
             modifies `x_data_rbf_ptr` and `x_ind_rbf_ptr` by transforming x
             with the RBF sampler
             """
-            rbf.transform(X_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
     else:
         def update_rbf_vars(double* x_data_ptr, double* x_ind_ptr, int xnnz):
             """ just performs a simple reassign """
@@ -656,7 +656,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
             for i in range(n_samples):
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
-
 
                 update_rbf_vars(x_data_ptr, x_ind_ptr, xnnz)
 
