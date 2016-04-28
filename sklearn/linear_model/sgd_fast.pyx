@@ -789,7 +789,7 @@ cdef class RBFSamplerInPlace:
     # returns int so that exceptions can be passed to caller
     cdef int transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
-            double* x_data_ptr_rbf) except -1 nogil:  # output
+            double* x_data_ptr_rbf) nogil except -1:  # output
         """
         Calculates
         1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
