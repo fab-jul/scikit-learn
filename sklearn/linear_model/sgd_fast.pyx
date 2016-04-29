@@ -786,6 +786,70 @@ cdef class RBFSamplerInPlace:
         # calculate factor from step 4. below only once
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
+
+    cdef void transform_and_multiply_mat(self,
+#        np.ndarray[double, ndim = 2, mode = "c"] X,
+        SequentialDataset dataset,
+        np.ndarray[double, ndim = 1, mode = "c"] coef,
+        np.ndarray[double, ndim = 1, mode = "c"] Y):
+        """
+        transforms X row by row and then multiplies each row with coef, stores
+        the result in Y
+        """
+        ## Declarations ####
+
+        cdef Py_ssize_t n_samples
+        cdef double y = 0.0
+        cdef double sample_weight
+
+#        cdef double* x_data_ptr  # 1D array containing all of X
+        cdef double* x_row_ptr  # points to the start of a row in X
+
+        # holds the non-zero indices of the current row *before* transformation
+#        cdef np.ndarray[int, ndim=1, mode='c'] _x_row_ind
+        cdef int* x_row_ind_ptr
+        cdef int xnnz  # number of non zero indices in x, basically row length
+
+        # where the current row is stored *after* transformation
+        cdef np.ndarray[double, ndim=1, mode='c'] _x_row_rbf
+        cdef double* x_row_rbf_ptr
+
+        # current value of the next output, built up during matrix
+        # multiplication
+        cdef double out_val  
+
+        # indices
+        cdef int sample_idx, i, idx
+
+        ## Assigment ####
+
+        n_samples = dataset.n_samples
+
+        # X is 2D, the pointer array is 1D, will use pointer arithmetic to get
+        # relevant rows
+#        x_data_ptr = <double*>X.data
+
+        # these remain constant, we ignore zeros in X for now
+#        _x_row_ind = np.arange(0, self.n_features, dtype=int)
+#        x_row_ind_ptr = <double*>_x_row_ind.data
+#        xnnz = n_features
+
+        _x_row_rbf = np.zeros(self.n_components, dtype=np.double)
+        x_row_rbf_ptr = <double*>_x_row_rbf.data
+
+        for sample_idx in range(n_samples):
+            dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
+                         &y, &sample_weight)
+
+            self.transform(x_row_ptr, x_row_ind_ptr, xnnz, x_row_rbf_ptr)
+
+            out_val = 0
+            for i in range(xnnz):
+                idx = x_row_ind_ptr[i]
+                out_val += x_row_rbf_ptr[idx] * x_row_ptr[j]
+            Y[sample_idx] = out_val
+
+
     # returns int so that exceptions can be passed to caller
     cdef int transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
