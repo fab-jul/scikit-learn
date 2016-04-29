@@ -790,7 +790,7 @@ cdef class RBFSamplerInPlace:
     cdef int transform_and_multiply_mat(self,
         SequentialDataset dataset,
         np.ndarray[double, ndim = 2, mode = "c"] coef,
-        np.ndarray[double, ndim = 1, mode = "c"] Y) nogil except -1:
+        np.ndarray[double, ndim = 1, mode = "c"] Y) except -1:
         """
         transforms dataset row by row and then multiplies each row with coef,
         which is expected to be of shape (n_components, n_classes), i.e.
