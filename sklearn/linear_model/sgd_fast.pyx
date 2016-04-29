@@ -788,27 +788,26 @@ cdef class RBFSamplerInPlace:
 
 
     cdef void transform_and_multiply_mat(self,
-#        np.ndarray[double, ndim = 2, mode = "c"] X,
         SequentialDataset dataset,
-        np.ndarray[double, ndim = 1, mode = "c"] coef,
-        np.ndarray[double, ndim = 1, mode = "c"] Y):
+        np.ndarray[double, ndim = 2, mode = "c"] coef,
+        np.ndarray[double, ndim = 1, mode = "c"] Y) nogil except -1:
         """
-        transforms X row by row and then multiplies each row with coef, stores
-        the result in Y
+        transforms dataset row by row and then multiplies each row with coef,
+        which is expected to be of shape (n_components, n_classes), i.e.
+        transformed stores the result in Y
         """
         ## Declarations ####
 
         cdef Py_ssize_t n_samples
-        cdef double y = 0.0
-        cdef double sample_weight
+        cdef Py_ssize_t n_classes
 
-#        cdef double* x_data_ptr  # 1D array containing all of X
-        cdef double* x_row_ptr  # points to the start of a row in X
+        cdef double y  # unused
+        cdef double sample_weight  # unused
 
-        # holds the non-zero indices of the current row *before* transformation
-#        cdef np.ndarray[int, ndim=1, mode='c'] _x_row_ind
+        # holds current row information *before* transformation
+        cdef double* x_row_ptr
         cdef int* x_row_ind_ptr
-        cdef int xnnz  # number of non zero indices in x, basically row length
+        cdef int xnnz  
 
         # where the current row is stored *after* transformation
         cdef np.ndarray[double, ndim=1, mode='c'] _x_row_rbf
@@ -819,20 +818,18 @@ cdef class RBFSamplerInPlace:
         cdef double out_val  
 
         # indices
-        cdef int sample_idx, i, idx
+        cdef int sample_idx, class_idx, i, idx
 
         ## Assigment ####
 
         n_samples = dataset.n_samples
+        (coef_num_rows, n_classes) = coef.shape
 
-        # X is 2D, the pointer array is 1D, will use pointer arithmetic to get
-        # relevant rows
-#        x_data_ptr = <double*>X.data
-
-        # these remain constant, we ignore zeros in X for now
-#        _x_row_ind = np.arange(0, self.n_features, dtype=int)
-#        x_row_ind_ptr = <double*>_x_row_ind.data
-#        xnnz = n_features
+        with gil:
+            (y_num_rows, y_num_cols) = Y.shape
+            assert coef_num_rows == self.n_components, 'Invalid coef # of rows'
+            assert y_num_rows == n_samples, 'Invalid Y # of rows'
+            assert y_num_cols == n_classes, 'Invalid Y # of classes'
 
         _x_row_rbf = np.zeros(self.n_components, dtype=np.double)
         x_row_rbf_ptr = <double*>_x_row_rbf.data
@@ -843,11 +840,12 @@ cdef class RBFSamplerInPlace:
 
             self.transform(x_row_ptr, x_row_ind_ptr, xnnz, x_row_rbf_ptr)
 
-            out_val = 0
-            for i in range(xnnz):
-                idx = x_row_ind_ptr[i]
-                out_val += x_row_rbf_ptr[idx] * x_row_ptr[i]
-            Y[sample_idx] = out_val
+            # compute matrix product: x_row_rbf_ptr * coef
+            for class_idx in range(n_classes):
+                out_val = 0
+                for i in range(self.n_components):
+                    out_val += x_row_rbf_ptr[idx] * coef[i, class_idx]
+                Y[sample_idx, class_idx] = out_val
 
 
     # returns int so that exceptions can be passed to caller
