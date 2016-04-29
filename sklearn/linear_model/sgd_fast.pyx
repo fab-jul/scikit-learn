@@ -787,7 +787,7 @@ cdef class RBFSamplerInPlace:
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
     def _transform_and_multiply_mat(self, dataset, coef, Y):
-        self._transform_and_multiply_mat(dataset, coef, Y)
+        return self._transform_and_multiply_mat(dataset, coef, Y)
 
     cdef int _transform_and_multiply_mat(self,
         SequentialDataset dataset,
