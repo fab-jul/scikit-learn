@@ -575,7 +575,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef int *x_ind_ptr_rbf = NULL
     cdef int xnnz_rbf
     cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
-    cdef np.ndarray[double, ndim=1, mode='c'] _x_ind_rbf
+    cdef np.ndarray[int, ndim=1, mode='c'] _x_ind_rbf
 
     # helper variables
     cdef bint infinity = False
