@@ -786,7 +786,7 @@ cdef class RBFSamplerInPlace:
         # calculate factor from step 4. below only once
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
-    def _transform_and_multiply_mat(self, dataset, coef, Y):
+    def transform_and_multiply_mat(self, dataset, coef, Y):
         n_samples = dataset.n_samples
         (coef_num_rows, n_classes) = coef.shape
         (y_num_rows, y_num_cols) = Y.shape
@@ -795,9 +795,9 @@ cdef class RBFSamplerInPlace:
         assert y_num_rows == n_samples, 'Invalid Y # of rows'
         assert y_num_cols == n_classes, 'Invalid Y # of classes'
 
-        return self._transform_and_multiply_mat(dataset, coef, Y)
+        self._transform_and_multiply_mat(dataset, coef, Y)
 
-    cdef int _transform_and_multiply_mat(self,
+    cdef _transform_and_multiply_mat(self,
         SequentialDataset dataset,
         np.ndarray[double, ndim = 2, mode = "c"] coef,
         np.ndarray[double, ndim = 1, mode = "c"] Y):
