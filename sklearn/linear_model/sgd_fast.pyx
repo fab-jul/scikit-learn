@@ -786,8 +786,10 @@ cdef class RBFSamplerInPlace:
         # calculate factor from step 4. below only once
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
+    def _transform_and_multiply_mat(self, dataset, coef, Y):
+        self._transform_and_multiply_mat(dataset, coef, Y)
 
-    def int transform_and_multiply_mat(self,
+    cdef int _transform_and_multiply_mat(self,
         SequentialDataset dataset,
         np.ndarray[double, ndim = 2, mode = "c"] coef,
         np.ndarray[double, ndim = 1, mode = "c"] Y) except -1:
