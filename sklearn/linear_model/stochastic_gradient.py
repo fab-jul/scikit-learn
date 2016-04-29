@@ -414,7 +414,8 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
             self.t_ = 1.0
 
         # prepare RBF if present
-        self.rbf.fit(n_features, self.random_state)
+        random_state = check_random_state(self.random_state)
+        self.rbf.fit(n_features, random_state)
 
         # delegate to concrete training procedure
         if n_classes > 2:
