@@ -846,7 +846,7 @@ cdef class RBFSamplerInPlace:
             out_val = 0
             for i in range(xnnz):
                 idx = x_row_ind_ptr[i]
-                out_val += x_row_rbf_ptr[idx] * x_row_ptr[j]
+                out_val += x_row_rbf_ptr[idx] * x_row_ptr[i]
             Y[sample_idx] = out_val
 
 
