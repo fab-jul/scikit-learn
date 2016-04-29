@@ -787,7 +787,7 @@ cdef class RBFSamplerInPlace:
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
 
-    cdef void transform_and_multiply_mat(self,
+    cdef int transform_and_multiply_mat(self,
         SequentialDataset dataset,
         np.ndarray[double, ndim = 2, mode = "c"] coef,
         np.ndarray[double, ndim = 1, mode = "c"] Y) nogil except -1:
