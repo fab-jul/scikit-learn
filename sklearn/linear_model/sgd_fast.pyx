@@ -777,7 +777,7 @@ cdef class RBFSamplerInPlace:
         self.random_weights_ = None
         self.random_offset_ = None
 
-    cdef fit(self, int n_features, object random_state):
+    cdef public void fit(self, int n_features, object random_state):
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
             size=(n_features, self.n_components)))
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,
@@ -787,7 +787,7 @@ cdef class RBFSamplerInPlace:
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
 
-    cdef int transform_and_multiply_mat(self,
+    cdef public int transform_and_multiply_mat(self,
         SequentialDataset dataset,
         np.ndarray[double, ndim = 2, mode = "c"] coef,
         np.ndarray[double, ndim = 1, mode = "c"] Y) except -1:
