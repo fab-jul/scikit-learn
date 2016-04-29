@@ -787,12 +787,20 @@ cdef class RBFSamplerInPlace:
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
     def _transform_and_multiply_mat(self, dataset, coef, Y):
+        n_samples = dataset.n_samples
+        (coef_num_rows, n_classes) = coef.shape
+        (y_num_rows, y_num_cols) = Y.shape
+
+        assert coef_num_rows == self.n_components, 'Invalid coef # of rows'
+        assert y_num_rows == n_samples, 'Invalid Y # of rows'
+        assert y_num_cols == n_classes, 'Invalid Y # of classes'
+
         return self._transform_and_multiply_mat(dataset, coef, Y)
 
     cdef int _transform_and_multiply_mat(self,
         SequentialDataset dataset,
         np.ndarray[double, ndim = 2, mode = "c"] coef,
-        np.ndarray[double, ndim = 1, mode = "c"] Y) except -1:
+        np.ndarray[double, ndim = 1, mode = "c"] Y):
         """
         transforms dataset row by row and then multiplies each row with coef,
         which is expected to be of shape (n_components, n_classes), i.e.
@@ -822,18 +830,10 @@ cdef class RBFSamplerInPlace:
         # indices
         cdef int sample_idx, class_idx, i, idx
 
-        # other
-        cdef int coef_num_rows, y_num_rows, y_num_cols
-
         ## Assigment ####
 
         n_samples = dataset.n_samples
-        (coef_num_rows, n_classes) = (coef.shape[0], coef.shape[1])  # cython
-
-        (y_num_rows, y_num_cols) = (Y.shape[0], Y.shape[1])
-        assert coef_num_rows == self.n_components, 'Invalid coef # of rows'
-        assert y_num_rows == n_samples, 'Invalid Y # of rows'
-        assert y_num_cols == n_classes, 'Invalid Y # of classes'
+        n_classes = coef.shape[1]
 
         _x_row_rbf = np.zeros(self.n_components, dtype=np.double)
         x_row_rbf_ptr = <double*>_x_row_rbf.data
