@@ -828,7 +828,7 @@ cdef class RBFSamplerInPlace:
         cdef double out_val  
 
         # indices
-        cdef int sample_idx, class_idx, i, idx
+        cdef int sample_idx, class_idx, i
 
         ## Assigment ####
 
@@ -848,7 +848,7 @@ cdef class RBFSamplerInPlace:
             for class_idx in range(n_classes):
                 out_val = 0
                 for i in range(self.n_components):
-                    out_val += x_row_rbf_ptr[idx] * coef[i, class_idx]
+                    out_val += x_row_rbf_ptr[i] * coef[i, class_idx]
                 Y[sample_idx, class_idx] = out_val
 
 
