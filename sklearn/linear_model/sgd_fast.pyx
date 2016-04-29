@@ -828,11 +828,10 @@ cdef class RBFSamplerInPlace:
         n_samples = dataset.n_samples
         (coef_num_rows, n_classes) = (coef.shape[0], coef.shape[1])  # cython
 
-        with gil:
-            (y_num_rows, y_num_cols) = (Y.shape[0], Y.shape[1])
-            assert coef_num_rows == self.n_components, 'Invalid coef # of rows'
-            assert y_num_rows == n_samples, 'Invalid Y # of rows'
-            assert y_num_cols == n_classes, 'Invalid Y # of classes'
+        (y_num_rows, y_num_cols) = (Y.shape[0], Y.shape[1])
+        assert coef_num_rows == self.n_components, 'Invalid coef # of rows'
+        assert y_num_rows == n_samples, 'Invalid Y # of rows'
+        assert y_num_cols == n_classes, 'Invalid Y # of classes'
 
         _x_row_rbf = np.zeros(self.n_components, dtype=np.double)
         x_row_rbf_ptr = <double*>_x_row_rbf.data
