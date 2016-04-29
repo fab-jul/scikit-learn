@@ -58,6 +58,14 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         self.n_components = n_components
         self.random_state = random_state
 
+    @staticmethod
+    def init_from_RBFSamplerInPlace(rbf_ip):
+        rbf = RBFSampler(rbf_ip.gamma, rbf_ip.n_components)
+        rbf.random_weights_ = rbf_ip.random_weights_
+        rbf.random_offset_ = rbf_ip.random_offset_
+        rbf.random_state = None
+        return rbf
+
     def fit(self, X, y=None):
         """Fit the model with X.
 
