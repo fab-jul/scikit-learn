@@ -820,6 +820,9 @@ cdef class RBFSamplerInPlace:
         # indices
         cdef int sample_idx, class_idx, i, idx
 
+        # other
+        cdef int coef_num_rows, n_classes, y_num_rows, y_num_cols
+
         ## Assigment ####
 
         n_samples = dataset.n_samples
