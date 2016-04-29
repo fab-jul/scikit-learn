@@ -765,8 +765,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
 
 cdef class RBFSamplerInPlace:
-    cdef float gamma
-    cdef int n_components
+    cdef public float gamma
+    cdef public int n_components
     cdef double[:, :] random_weights_
     cdef double[:] random_offset_
     cdef double factor_
