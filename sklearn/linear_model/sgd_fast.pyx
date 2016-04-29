@@ -838,7 +838,7 @@ cdef class RBFSamplerInPlace:
         x_row_rbf_ptr = <double*>_x_row_rbf.data
 
         for sample_idx in range(n_samples):
-            dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
+            dataset.next(&x_row_ptr, &x_row_ind_ptr, &xnnz,
                          &y, &sample_weight)
 
             self.transform(x_row_ptr, x_row_ind_ptr, xnnz, x_row_rbf_ptr)
