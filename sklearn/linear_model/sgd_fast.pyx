@@ -781,6 +781,7 @@ cdef class RBFSamplerInPlace:
         self.random_offset_ = None
 
     def fit(self, n_features, random_state):
+        print 'RBF fit w/ %d features, %d comps' % (n_features, self.n_components)
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
             size=(n_features, self.n_components)))
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,
@@ -882,6 +883,9 @@ cdef class RBFSamplerInPlace:
 
         # iterate over columns of random_weights_
         for col in range(self.n_components):
+            with gil:
+                print 'col %d' % col
+
             out_val = 0
             # iterate over elements of x
             for i in range(xnnz):
