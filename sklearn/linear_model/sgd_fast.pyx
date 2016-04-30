@@ -590,6 +590,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef unsigned int count = 0
     cdef unsigned int epoch = 0
     cdef unsigned int i = 0
+    cdef unsigned int j, idx  # FJ
     cdef int is_hinge = isinstance(loss, Hinge)
     cdef double optimal_init = 0.0
     cdef double dloss = 0.0
@@ -644,6 +645,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
+
                 # update RBF variables
                 if rbf is not None:
                     rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
@@ -651,6 +653,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     x_data_rbf_ptr = x_data_ptr
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
+
+                with gil:
+                    print ' '.join(x_data_rbf_ptr[j] for j in range(xnnz)[:10])
 
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
                 with gil:
