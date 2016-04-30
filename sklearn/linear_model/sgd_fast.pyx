@@ -824,7 +824,7 @@ cdef class RBFSamplerInPlace:
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
     # returns int so that exceptions can be passed to caller
-    cdef void inline transform(self,
+    cdef inline void transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
             double* x_data_rbf_ptr) nogil:  # output
         """
