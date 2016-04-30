@@ -751,20 +751,21 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     return weights, intercept, average_weights, average_intercept
 
 
-def test_dot():
-    _test_dot()
+def test_dot(X, rw):
+    _test_dot(X, rw)
 
 
-cdef void _test_dot():
-    cdef int n_components = 10
-    cdef int n_features = 5
+cdef void _test_dot(
+        np.ndarray[double, ndim = 1, mode = "c"] X,
+        np.ndarray[double, ndim = 2, mode = "c"] rw,
+        ):
+    cdef int n_components = rw.shape[1]
+    cdef int n_features = rw.shape[0]
     cdef float gamma = 1
-    cdef double[:, :] unity = np.ones((n_features, n_components))
-    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
+#    cdef double[:, :] unity = np.ones((n_features, n_components))
 
-    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data = np.ones(n_features)
-    x_data[4] = 0
-    cdef double* x_data_ptr = <double*>x_data.data
+#    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data = np.ones(n_features)
+    cdef double* x_data_ptr = <double*>X.data
     cdef np.ndarray[np.int64_t, ndim = 1, mode = "c"] x_ind = np.arange(n_features)
     cdef int* x_ind_ptr = <int*>x_ind.data
     cdef int xnnz = n_features
@@ -774,7 +775,8 @@ cdef void _test_dot():
 
     cdef int i
 
-    rbf.random_weights_ = unity
+    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
+    rbf.random_weights_ = rw
     rbf.random_offset_ = np.ones(n_components)
 
     with nogil:
