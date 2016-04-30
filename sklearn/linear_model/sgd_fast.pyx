@@ -762,9 +762,9 @@ cdef void _test_dot():
     cdef double[:, :] unity = np.ones((n_features, n_components))
     cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
 
-    cdef double[:] x_data = np.ones(n_components)
+    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data = np.ones(n_components)
     cdef double* x_data_ptr = <double*>x_data.data
-    cdef np.int64_t[:] x_ind = np.arange(n_components)
+    cdef np.ndarray[np.int64_t, ndim = 1, mode = "c"] x_ind = np.arange(n_components)
     cdef int* x_ind_ptr = <double*>x_ind.data
     cdef int xnnz = n_components
 
