@@ -776,8 +776,6 @@ cdef void _test_dot(
     cdef double* x_data_rbf_ptr = <double*>x_data_rbf.data
 
     cdef int i
-    for i in range(n_features*2):
-        print x_ind_ptr[i]
 
     cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
     rbf.random_weights_ = rw
@@ -793,9 +791,9 @@ cdef void _test_dot(
 
 #    cdef np.ndarray[double, ndim = 2, mode='c'] X_2d = np.zeros((1, n_features))
 #    X_2d[0, :] = X
-    real_rbf = rbf.get_RBFSampler()
-    x_data_rbf = real_rbf.transform(X)
-    print x_data_rbf
+#    real_rbf = rbf.get_RBFSampler()
+#    x_data_rbf = real_rbf.transform(X)
+#    print x_data_rbf
 
 
 cdef class RBFSamplerInPlace:
