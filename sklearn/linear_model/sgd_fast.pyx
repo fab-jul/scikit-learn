@@ -654,7 +654,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
                 with gil:
-                    print p
+                    print 'wTx + %i= %f' % (intercept, p)
 
                 if learning_rate == OPTIMAL:
                     eta = 1.0 / (alpha * (optimal_init + t - 1))
