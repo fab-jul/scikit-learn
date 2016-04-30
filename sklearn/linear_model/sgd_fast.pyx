@@ -807,12 +807,12 @@ cdef class RBFSamplerInPlace:
         self.random_weights_ = None
         self.random_offset_ = None
 
-#    # FJ just to debug
-#    def get_RBFSampler(self):
-#        rbf = RBFSampler(self.gamma, self.n_components)
-#        rbf.random_weights_ = self.random_weights_
-#        rbf.random_offset_ = self.random_offset_
-#        return rbf
+    # FJ just to debug
+    def get_RBFSampler(self):
+        rbf = RBFSampler(self.gamma, self.n_components)
+        rbf.random_weights_ = self.random_weights_
+        rbf.random_offset_ = self.random_offset_
+        return rbf
 
     def fit(self, n_features, random_state):
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
