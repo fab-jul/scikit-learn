@@ -763,6 +763,7 @@ cdef void _test_dot():
     cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
 
     cdef np.ndarray[double, ndim = 1, mode = "c"] x_data = np.ones(n_features)
+    x_data[4] = 0
     cdef double* x_data_ptr = <double*>x_data.data
     cdef np.ndarray[np.int64_t, ndim = 1, mode = "c"] x_ind = np.arange(n_features)
     cdef int* x_ind_ptr = <int*>x_ind.data
