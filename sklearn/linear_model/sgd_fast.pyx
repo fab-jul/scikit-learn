@@ -628,7 +628,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         # transformed value in each iteration.
         _x_data_rbf = np.zeros(rbf.n_components, dtype=np.double)
         x_data_rbf_ptr = <double*>_x_data_rbf.data
-        print '%f' % x_data_rbf_ptr[0]
 
         # these remain fixed because the RBF transformed X is hardly sparse.
         _x_ind_rbf = np.arange(0, rbf.n_components, dtype=int)
@@ -655,6 +654,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     print '_plain_sgd setup done'
 
     with nogil:
+        with gil:
+            print '%f' % x_data_rbf_ptr[0]
         for epoch in range(n_iter):
             if verbose > 0:
                 with gil:
