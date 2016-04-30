@@ -372,7 +372,12 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         check_is_fitted(self, "coef_")
 
         (n_samples, _) = X.shape
-        y = np.zeros(n_samples)
+
+        if self.n_classes_ > 2:
+            y = np.zeros((n_samples, n_classes))
+        else:
+            y = np.zeros((n_samples,))
+
         sample_weight = np.ones(n_samples, dtype=np.double)
 
         dataset, _ = make_dataset(X, y, sample_weight)
