@@ -590,7 +590,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef unsigned int count = 0
     cdef unsigned int epoch = 0
     cdef unsigned int i = 0
-    cdef unsigned int j, idx  # FJ
+    cdef unsigned int j # FJ for debugging
     cdef int is_hinge = isinstance(loss, Hinge)
     cdef double optimal_init = 0.0
     cdef double dloss = 0.0
@@ -645,7 +645,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
-
                 # update RBF variables
                 if rbf is not None:
                     rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
@@ -654,12 +653,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
 
-                with gil:
-                    print ' '.join(str(x_data_rbf_ptr[j]) for j in range(xnnz)[:10])
-
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
-                with gil:
-                    print 'wTx + %i= %f' % (intercept, p)
+
+                if verbose > 0
+                    with gil:
+                        print 'x: %s' % (' '.join(str(x_data_rbf_ptr[j])
+                                         for j in range(xnnz_rbf)[:10]))
+                        print 'wTx + %i= %f' % (intercept, p)
 
                 if learning_rate == OPTIMAL:
                     eta = 1.0 / (alpha * (optimal_init + t - 1))
@@ -756,51 +756,43 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     return weights, intercept, average_weights, average_intercept
 
 
-def test_dot(X, rw):
-    return _test_dot(X, rw)
-
-
-cdef object _test_dot(
-        np.ndarray[double, ndim = 2, mode = "c"] X,
-        np.ndarray[double, ndim = 2, mode = "c"] rw):
-    cdef int n_components = rw.shape[1]
-    cdef int n_features = rw.shape[0]
-    cdef float gamma = 1
-#    cdef double[:, :] unity = np.ones((n_features, n_components))
-
-#    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data = np.ones(n_features)
-    cdef double* x_data_ptr = <double*>X.data
-    cdef np.ndarray[int, ndim = 1, mode = "c"] x_ind = np.arange(n_features, dtype=np.intc)
-    print x_ind
-
-    cdef int* x_ind_ptr = <int*>x_ind.data
-    cdef int xnnz = n_features
-
-    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data_rbf = np.zeros(n_components)
-    cdef double* x_data_rbf_ptr = <double*>x_data_rbf.data
-
-    cdef int i
-
-    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
-    rbf.random_weights_ = rw
-    rbf.random_offset_ = np.zeros(n_components)
-    rbf.factor_ = np.sqrt(2.) / np.sqrt(n_components)
-
-    with nogil:
-        rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
-
-    print 'output RBF'
-    for i in range(n_components):
-        print x_data_rbf[i]
-
-    real_rbf = rbf.get_RBFSampler()
-    return real_rbf
-
-#    cdef np.ndarray[double, ndim = 2, mode='c'] X_2d = np.zeros((1, n_features))
-#    X_2d[0, :] = X
-#    x_data_rbf = real_rbf.transform(X)
-#    print x_data_rbf
-
+#def test_dot(X, rw):
+#    return _test_dot(X, rw)
+#
+#
+#cdef object _test_dot(
+#        np.ndarray[double, ndim = 2, mode = "c"] X,
+#        np.ndarray[double, ndim = 2, mode = "c"] rw):
+#    cdef int n_components = rw.shape[1]
+#    cdef int n_features = rw.shape[0]
+#    cdef float gamma = 1
+#    cdef double* x_data_ptr = <double*>X.data
+#    cdef np.ndarray[int, ndim = 1, mode = "c"] x_ind = np.arange(n_features, dtype=np.intc)
+#    print x_ind
+#
+#    cdef int* x_ind_ptr = <int*>x_ind.data
+#    cdef int xnnz = n_features
+#
+#    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data_rbf = np.zeros(n_components)
+#    cdef double* x_data_rbf_ptr = <double*>x_data_rbf.data
+#
+#    cdef int i
+#
+#    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
+#    rbf.random_weights_ = rw
+#    rbf.random_offset_ = np.zeros(n_components)
+#    rbf.factor_ = np.sqrt(2.) / np.sqrt(n_components)
+#
+#    with nogil:
+#        rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+#
+#    print 'output RBF'
+#    for i in range(n_components):
+#        print x_data_rbf[i]
+#
+#    real_rbf = rbf.get_RBFSampler()
+#    return real_rbf
+#
 
 cdef class RBFSamplerInPlace:
     cdef public float gamma
@@ -815,12 +807,12 @@ cdef class RBFSamplerInPlace:
         self.random_weights_ = None
         self.random_offset_ = None
 
-    # FJ just to debug
-    def get_RBFSampler(self):
-        rbf = RBFSampler(self.gamma, self.n_components)
-        rbf.random_weights_ = self.random_weights_
-        rbf.random_offset_ = self.random_offset_
-        return rbf
+#    # FJ just to debug
+#    def get_RBFSampler(self):
+#        rbf = RBFSampler(self.gamma, self.n_components)
+#        rbf.random_weights_ = self.random_weights_
+#        rbf.random_offset_ = self.random_offset_
+#        return rbf
 
     def fit(self, n_features, random_state):
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
@@ -862,8 +854,6 @@ cdef class RBFSamplerInPlace:
             for i in range(xnnz):  # 1.
                 idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
                 out_val += x_data_ptr[i] * self.random_weights_[idx, col]
-#                with gil:
-#                    print '%i -> %i: %f * %f' % (i, idx, x_data_ptr[i], self.random_weights_[idx, col])
             out_val += self.random_offset_[col]  # 2.
             out_val = cos(out_val)  # 3.
             out_val *= self.factor_  # 4.
