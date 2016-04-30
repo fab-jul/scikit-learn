@@ -752,13 +752,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
 
 def test_dot(X, rw):
-    _test_dot(X, rw)
+    return _test_dot(X, rw)
 
 
-cdef void _test_dot(
+cdef RBFSampler _test_dot(
         np.ndarray[double, ndim = 2, mode = "c"] X,
-        np.ndarray[double, ndim = 2, mode = "c"] rw,
-        ):
+        np.ndarray[double, ndim = 2, mode = "c"] rw):
     cdef int n_components = rw.shape[1]
     cdef int n_features = rw.shape[0]
     cdef float gamma = 1
@@ -789,9 +788,11 @@ cdef void _test_dot(
     for i in range(n_components):
         print x_data_rbf[i]
 
+    real_rbf = rbf.get_RBFSampler()
+    return real_rbf
+
 #    cdef np.ndarray[double, ndim = 2, mode='c'] X_2d = np.zeros((1, n_features))
 #    X_2d[0, :] = X
-#    real_rbf = rbf.get_RBFSampler()
 #    x_data_rbf = real_rbf.transform(X)
 #    print x_data_rbf
 
