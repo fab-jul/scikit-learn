@@ -767,6 +767,8 @@ cdef void _test_dot(
 #    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data = np.ones(n_features)
     cdef double* x_data_ptr = <double*>X.data
     cdef np.ndarray[np.int64_t, ndim = 1, mode = "c"] x_ind = np.arange(n_features)
+    with gil:
+        print x_ind
     cdef int* x_ind_ptr = <int*>x_ind.data
     cdef int xnnz = n_features
 
