@@ -765,7 +765,7 @@ cdef void _test_dot():
     cdef np.ndarray[double, ndim = 1, mode = "c"] x_data = np.ones(n_components)
     cdef double* x_data_ptr = <double*>x_data.data
     cdef np.ndarray[np.int64_t, ndim = 1, mode = "c"] x_ind = np.arange(n_components)
-    cdef int* x_ind_ptr = <double*>x_ind.data
+    cdef int* x_ind_ptr = <int*>x_ind.data
     cdef int xnnz = n_components
 
     cdef double[:] x_data_rbf = np.zeros(n_components)
