@@ -576,7 +576,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef int *x_ind_rbf_ptr = NULL
     cdef int xnnz_rbf
     cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
-    cdef np.ndarray[np.int64_t, ndim=1, mode='c'] _x_ind_rbf
+    cdef np.ndarray[int, ndim=1, mode='c'] _x_ind_rbf
 
     # helper variables
     cdef bint infinity = False
@@ -629,7 +629,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_data_rbf_ptr = <double*>_x_data_rbf.data
 
         # these remain fixed because the RBF transformed X is hardly sparse.
-        _x_ind_rbf = np.arange(0, rbf.n_components, dtype=int)
+        _x_ind_rbf = np.arange(0, rbf.n_components, dtype=np.intc)
         x_ind_rbf_ptr = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
