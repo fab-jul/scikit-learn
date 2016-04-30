@@ -768,7 +768,7 @@ cdef void _test_dot():
     cdef int* x_ind_ptr = <int*>x_ind.data
     cdef int xnnz = n_components
 
-    cdef double[:] x_data_rbf = np.zeros(n_components)
+    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data_rbf = np.zeros(n_components)
     cdef double* x_data_rbf_ptr = <double*>x_data_rbf.data
 
     cdef int i
