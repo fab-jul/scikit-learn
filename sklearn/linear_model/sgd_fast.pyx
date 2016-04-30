@@ -756,9 +756,31 @@ def test_dot():
 
 
 cdef void _test_dot():
-    cdef double[:, :] unity = np.ones((10, 10))
-    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(1,1)
+    cdef int n_components = 10
+    cdef int n_features = 5
+    cdef float gamma = 1
+    cdef double[:, :] unity = np.ones((n_features, n_components))
+    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
+
+    cdef double[:] x_data = np.ones(n_components)
+    cdef double* x_data_ptr = <double*>x_data.data
+    cdef np.int64_t[:] x_ind = np.arange(n_components)
+    cdef int* x_ind_ptr = <double*>x_ind.data
+    cdef int xnnz = n_components
+
+    cdef double[:] x_data_rbf = np.zeros(n_components)
+    cdef double* x_data_rbf_ptr = <double*>x_data_rbf.data
+
+    cdef int i
+
     rbf.random_weights_ = unity
+    rbf.random_offset_ = np.ones(n_components)
+
+    with nogil:
+        rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf)
+
+    for i in range(n_components):
+        print x_data_rbf[i]
 
 
 cdef class RBFSamplerInPlace:
@@ -821,9 +843,9 @@ cdef class RBFSamplerInPlace:
             for i in range(xnnz):  # 1.
                 idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
                 out_val += x_data_ptr[i] * self.random_weights_[idx, col]
-            out_val += self.random_offset_[col]  # 2.
-            out_val = cos(out_val)  # 3.
-            out_val *= self.factor_  # 4.
+     #       out_val += self.random_offset_[col]  # 2.
+     #       out_val = cos(out_val)  # 3.
+     #       out_val *= self.factor_  # 4.
 
             x_data_rbf_ptr[col] = out_val
 
