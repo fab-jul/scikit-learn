@@ -778,8 +778,8 @@ cdef object _test_dot(
 
     cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
     rbf.random_weights_ = rw
-    rbf.random_offset_ = np.ones(n_components)
-    rbf.factor_ = 1
+    rbf.random_offset_ = np.zeros(n_components)
+    rbf.factor_ = np.sqrt(2.) / np.sqrt(n_components)
 
     with nogil:
         rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
