@@ -777,7 +777,7 @@ cdef void _test_dot():
     rbf.random_offset_ = np.ones(n_components)
 
     with nogil:
-        rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf)
+        rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 
     for i in range(n_components):
         print x_data_rbf[i]
