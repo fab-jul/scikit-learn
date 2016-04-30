@@ -751,6 +751,16 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     return weights, intercept, average_weights, average_intercept
 
 
+def test_dot():
+    _test_dot()
+
+
+cdef void _test_dot():
+    cdef double[:, :] unity = np.ones((10, 10))
+    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(1,1)
+    rbf.random_weights_ = unity
+
+
 cdef class RBFSamplerInPlace:
     cdef public float gamma
     cdef public int n_components
