@@ -816,15 +816,14 @@ cdef class RBFSamplerInPlace:
 
     def fit(self, n_features, random_state):
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
-            size=(n_features, self.n_components)))
+            size=(n_features, self.n_components), order='F'))
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,
                                                    size=self.n_components)
 
         # calculate factor from step 4. below only once
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
-    # returns int so that exceptions can be passed to caller
-    cdef inline void transform(self,
+    cdef void transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
             double* x_data_rbf_ptr) nogil:  # output
         """
