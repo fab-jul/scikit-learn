@@ -633,23 +633,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_ind_ptr_rbf = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
-#        def update_rbf_vars():
-#            """
-#            modifies `x_data_rbf_ptr` and `x_ind_rbf_ptr` by transforming x
-#            with the RBF sampler
-#            """
-##            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
-#            pass
-    else:
-        pass
-#        cdef update_rbf_vars():
-#            """ just performs a simple reassign """
-#            rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
-#            pass
-#            #x_data_rbf_ptr = x_data_ptr
-#            #x_ind_rbf_ptr = x_ind_ptr
-#            #xnnz_rbf = xnnz
-
     with nogil:
         for epoch in range(n_iter):
             if verbose > 0:
@@ -670,6 +653,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     xnnz_rbf = xnnz
 
                 p = w.dot(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf) + intercept
+                with gil:
+                    print p
 
                 if learning_rate == OPTIMAL:
                     eta = 1.0 / (alpha * (optimal_init + t - 1))
@@ -779,6 +764,7 @@ cdef class RBFSamplerInPlace:
         self.random_weights_ = None
         self.random_offset_ = None
 
+    # FJ just to debug
     def get_RBFSampler(self):
         rbf = RBFSampler(self.gamma, self.n_components)
         rbf.random_weights_ = self.random_weights_
@@ -793,6 +779,43 @@ cdef class RBFSamplerInPlace:
 
         # calculate factor from step 4. below only once
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
+
+    # returns int so that exceptions can be passed to caller
+    cdef int transform(self,
+            double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
+            double* x_data_rbf_ptr) nogil except -1:  # output
+        """
+        Calculates
+        1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
+        2. projection += self.random_offset_
+        3. np.cos(projection, projection)  # second argument is output
+        4. projection *= np.sqrt(2.) / np.sqrt(self.n_components)
+        """
+        with gil:
+            assert (self.random_weights_ is not None and
+                    self.random_offset_ is not None),\
+                            'use fit() before transform_rbf()'
+
+        # current column in random_weights_
+        cdef int col
+
+        # current component when doing multiplication, see below
+        cdef int idx
+
+        # holds value for x_i * random_weights_[:, col] before it gets written
+        cdef double out_val
+
+        # iterate over columns of random_weights_
+        for col in range(self.n_components):
+            out_val = 0
+            for i in range(xnnz):  # 1.
+                idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
+                out_val += x_data_ptr[i] * self.random_weights_[idx, col]
+            out_val += self.random_offset_[col]  # 2.
+            out_val = cos(out_val)  # 3.
+            out_val *= self.factor_  # 4.
+
+            x_data_rbf_ptr[col] = out_val
 
     def transform_and_multiply_mat(self, dataset, coef, Y):
         n_samples = dataset.n_samples
@@ -825,7 +848,7 @@ cdef class RBFSamplerInPlace:
         # holds current row information *before* transformation
         cdef double* x_row_ptr
         cdef int* x_row_ind_ptr
-        cdef int xnnz  
+        cdef int xnnz
 
         # where the current row is stored *after* transformation
         cdef np.ndarray[double, ndim=1, mode='c'] _x_row_rbf
@@ -833,7 +856,7 @@ cdef class RBFSamplerInPlace:
 
         # current value of the next output, built up during matrix
         # multiplication
-        cdef double out_val  
+        cdef double out_val
 
         # indices
         cdef int sample_idx, class_idx, i
@@ -858,45 +881,6 @@ cdef class RBFSamplerInPlace:
                 for i in range(self.n_components):
                     out_val += x_row_rbf_ptr[i] * coef[class_idx, i]
                 Y[sample_idx, class_idx] = out_val
-
-
-    # returns int so that exceptions can be passed to caller
-    cdef int transform(self,
-            double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
-            double* x_data_rbf_ptr) nogil except -1:  # output
-        """
-        Calculates
-        1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
-        2. projection += self.random_offset_
-        3. np.cos(projection, projection)  # second argument is output
-        4. projection *= np.sqrt(2.) / np.sqrt(self.n_components)
-        """
-        with gil:
-            assert (self.random_weights_ is not None and
-                    self.random_offset_ is not None),\
-                            'use fit() before transform_rbf()'
-
-        # current column in random_weights_
-        cdef int col
-
-        # current component when doing multiplication, see below
-        cdef int idx
-
-        # holds value for x_i * random_weights_[:, col] before it gets written
-        cdef double out_val
-
-        # iterate over columns of random_weights_
-        for col in range(self.n_components):
-            out_val = 0
-            # iterate over elements of x
-            for i in range(xnnz):
-                idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
-                out_val += x_data_ptr[i] * self.random_weights_[idx, col]  # 1.
-            out_val += self.random_offset_[col]  # 2.
-            out_val = cos(out_val)  # 3.
-            out_val *= self.factor_ # 4.
-
-            x_data_rbf_ptr[col] = out_val
 
 
 cdef bint any_nonfinite(double *w, int n) nogil:
