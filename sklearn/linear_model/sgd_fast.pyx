@@ -824,9 +824,9 @@ cdef class RBFSamplerInPlace:
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
     # returns int so that exceptions can be passed to caller
-    cdef void transform(self,
+    cdef int transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
-            double* x_data_rbf_ptr) nogil:  # output
+            double* x_data_rbf_ptr) nogil except -1:  # output
         """
         Calculates
         1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
@@ -834,10 +834,10 @@ cdef class RBFSamplerInPlace:
         3. np.cos(projection, projection)  # second argument is output
         4. projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         """
-#        with gil:
-#            assert (self.random_weights_ is not None and
-#                    self.random_offset_ is not None),\
-#                            'use fit() before transform_rbf()'
+        with gil:
+            assert (self.random_weights_ is not None and
+                    self.random_offset_ is not None),\
+                            'use fit() before transform_rbf()'
 
         # current column in random_weights_
         cdef int col
