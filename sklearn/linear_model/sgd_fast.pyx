@@ -854,9 +854,9 @@ cdef class RBFSamplerInPlace:
             for i in range(xnnz):  # 1.
                 idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
                 out_val += x_data_ptr[i] * self.random_weights_[idx, col]
-            out_val += self.random_offset_[col]  # 2.
-            out_val = cos(out_val)  # 3.
-            out_val *= self.factor_  # 4.
+#            out_val += self.random_offset_[col]  # 2.
+#            out_val = cos(out_val)  # 3.
+            out_val = self.factor_ * cos(out_val + self.random_offset_[col]) # 4.
 
             x_data_rbf_ptr[col] = out_val
 
