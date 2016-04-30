@@ -755,7 +755,7 @@ def test_dot(X, rw):
     return _test_dot(X, rw)
 
 
-cdef RBFSampler _test_dot(
+cdef object _test_dot(
         np.ndarray[double, ndim = 2, mode = "c"] X,
         np.ndarray[double, ndim = 2, mode = "c"] rw):
     cdef int n_components = rw.shape[1]
