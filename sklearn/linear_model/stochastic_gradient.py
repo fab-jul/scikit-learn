@@ -371,6 +371,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
 
         rbf = self.rbf.get_RBFSampler()
         X_transformed = rbf.transform(rbf)
+        print X_transformed
         return super(BaseSGDClassifier, self).predict(X_transformed)
 
 #        check_is_fitted(self, "coef_")
