@@ -548,8 +548,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                int average=0,
                RBFSamplerInPlace rbf=None):
 
-    print '_plain_sgd start'
-
     if rbf is not None:
         assert weights.shape[0] == rbf.n_components,\
                 'weights vector not scaled appropriately for RBF'
@@ -651,8 +649,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #            #x_ind_rbf_ptr = x_ind_ptr
 #            #xnnz_rbf = xnnz
 
-    print '_plain_sgd setup done'
-
     with nogil:
         for epoch in range(n_iter):
             if verbose > 0:
@@ -672,12 +668,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
 
-                with gil:
-                    print 'sample %i transfomed' % i
-
                 p = w.dot(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf) + intercept
-                with gil:
-                    print 'sample %i dot prod' % i
 
                 if learning_rate == OPTIMAL:
                     eta = 1.0 / (alpha * (optimal_init + t - 1))
@@ -694,8 +685,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 if learning_rate == PA1:
                     update = sqnorm(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf)
-                    with gil:
-                        print 'sample %i sqnorm' % i
                     if update == 0:
                         continue
                     update = min(C, loss.loss(p, y) / update)
@@ -728,8 +717,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     w.scale(max(0, 1.0 - ((1.0 - l1_ratio) * eta * alpha)))
                 if update != 0.0:
                     w.add(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf, update)
-                    with gil:
-                        print 'sample %i add' % i
 
                     if fit_intercept == 1:
                         intercept += update * intercept_decay
@@ -792,7 +779,6 @@ cdef class RBFSamplerInPlace:
         self.random_offset_ = None
 
     def fit(self, n_features, random_state):
-        print 'RBF fit w/ %d features, %d comps' % (n_features, self.n_components)
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
             size=(n_features, self.n_components)))
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,

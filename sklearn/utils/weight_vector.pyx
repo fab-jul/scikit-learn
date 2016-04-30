@@ -167,11 +167,6 @@ cdef class WeightVector(object):
         cdef double* w_data_ptr = self.w_data_ptr
         for j in range(xnnz):
             idx = x_ind_ptr[j]
-            with gil:
-                print '%d -> %d' % (j, idx)
-                print '%f *' % w_data_ptr[idx]
-                print '%f' % x_data_ptr[j]
-
             innerprod += w_data_ptr[idx] * x_data_ptr[j]
         innerprod *= self.wscale
         return innerprod
