@@ -372,7 +372,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         check_is_fitted(self, "coef_")
 
         (n_samples, _) = X.shape
-        y = np.zeros(n_samples, dype=int)
+        y = np.zeros(n_samples)
         sample_weight = np.ones(n_samples, dtype=np.double)
 
         dataset, _ = make_dataset(X, y, sample_weight)
@@ -380,7 +380,13 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         self.rbf.transform_and_multiply_mat(dataset, self.coef_.T, y)
         scores = y + self.intercept_
 
-        return scores.ravel() if scores.shape[1] == 1 else scores
+        scores = scores.ravel() if scores.shape[1] == 1 else scores
+
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(np.int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
 
 
     # BaseSGDClassifier
