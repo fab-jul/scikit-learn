@@ -672,7 +672,11 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
 
+                print 'sample %i transfomed' % i
+
                 p = w.dot(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf) + intercept
+                print 'sample %i dot prod' % i
+
                 if learning_rate == OPTIMAL:
                     eta = 1.0 / (alpha * (optimal_init + t - 1))
                 elif learning_rate == INVSCALING:
@@ -688,6 +692,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 if learning_rate == PA1:
                     update = sqnorm(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf)
+                    print 'sample %i sqnorm' % i
                     if update == 0:
                         continue
                     update = min(C, loss.loss(p, y) / update)
@@ -720,6 +725,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     w.scale(max(0, 1.0 - ((1.0 - l1_ratio) * eta * alpha)))
                 if update != 0.0:
                     w.add(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf, update)
+                    print 'sample %i add' % i
+
                     if fit_intercept == 1:
                         intercept += update * intercept_decay
 
@@ -883,9 +890,6 @@ cdef class RBFSamplerInPlace:
 
         # iterate over columns of random_weights_
         for col in range(self.n_components):
-            with gil:
-                print 'col %d' % col
-
             out_val = 0
             # iterate over elements of x
             for i in range(xnnz):
