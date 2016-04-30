@@ -569,7 +569,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
     # Values used in the RBF case. If there is no RBF Sampler, these will point
     # to the above variables with the same name but without the '_rbf' at the
-    # end. If there is an RBF Sampler, the x_ind_ptr_rbf and the xnnz_rbf
+    # end. If there is an RBF Sampler, the x_ind_rbf_ptr and the xnnz_rbf
     # variables always hold the same value, namely all indices from 0 to
     # n_components-1 and n_components, respectively.
     cdef double *x_data_rbf_ptr = NULL
@@ -630,7 +630,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
         # these remain fixed because the RBF transformed X is hardly sparse.
         _x_ind_rbf = np.arange(0, rbf.n_components, dtype=int)
-        x_ind_ptr_rbf = <int*>_x_ind_rbf.data
+        x_ind_rbf_ptr = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
     with nogil:
@@ -652,7 +652,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
 
-                p = w.dot(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf) + intercept
+                p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
                 with gil:
                     print p
 
@@ -670,12 +670,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     class_weight = weight_neg
 
                 if learning_rate == PA1:
-                    update = sqnorm(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf)
+                    update = sqnorm(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf)
                     if update == 0:
                         continue
                     update = min(C, loss.loss(p, y) / update)
                 elif learning_rate == PA2:
-                    update = sqnorm(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf)
+                    update = sqnorm(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf)
                     update = loss.loss(p, y) / (update + 0.5 / C)
                 else:
                     dloss = loss._dloss(p, y)
@@ -702,7 +702,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     # big: instead set the weights to zero
                     w.scale(max(0, 1.0 - ((1.0 - l1_ratio) * eta * alpha)))
                 if update != 0.0:
-                    w.add(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf, update)
+                    w.add(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf, update)
 
                     if fit_intercept == 1:
                         intercept += update * intercept_decay
@@ -712,7 +712,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     # average weights, this is done regardless as to whether
                     # the update is 0
 
-                    w.add_average(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf,
+                    w.add_average(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf,
                                   update, (t - average + 1))
                     average_intercept += ((intercept - average_intercept) /
                                           (t - average + 1))
