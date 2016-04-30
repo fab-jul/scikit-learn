@@ -655,7 +655,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     xnnz_rbf = xnnz
 
                 with gil:
-                    print ' '.join(x_data_rbf_ptr[j] for j in range(xnnz)[:10])
+                    print ' '.join(str(x_data_rbf_ptr[j]) for j in range(xnnz)[:10])
 
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
                 with gil:
