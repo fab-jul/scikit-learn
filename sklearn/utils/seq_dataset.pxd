@@ -9,7 +9,7 @@ cdef class SequentialDataset:
     cdef int current_index
     cdef np.ndarray index
     cdef int *index_data_ptr
-    cdef Py_ssize_t n_samples
+    cdef public Py_ssize_t n_samples
     cdef np.uint32_t seed
 
     cdef void shuffle(self, np.uint32_t seed) nogil
