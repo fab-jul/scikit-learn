@@ -170,7 +170,7 @@ cdef class WeightVector(object):
             with gil:
                 print '%d -> %d' % (j, idx)
                 print '%f *' % w_data_ptr[idx]
-                print '%f' % X_data_ptr[j]
+                print '%f' % x_data_ptr[j]
 
             innerprod += w_data_ptr[idx] * x_data_ptr[j]
         innerprod *= self.wscale
