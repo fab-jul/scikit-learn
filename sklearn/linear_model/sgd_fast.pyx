@@ -631,6 +631,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         # these remain fixed because the RBF transformed X is hardly sparse.
         _x_ind_rbf = np.arange(0, rbf.n_components, dtype=np.intc)
         x_ind_rbf_ptr = <int*>_x_ind_rbf.data
+        for i in range(rbf.n_components):
+            print x_ind_rbf_ptr[i]
         xnnz_rbf = rbf.n_components
 
     with nogil:
