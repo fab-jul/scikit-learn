@@ -366,36 +366,36 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         if self.rbf is None:
             return super(BaseSGDClassifier, self).predict(X)
 
-        rbf = self.rbf.get_RBFSampler()
-        X_transformed = rbf.transform(X)
-        return super(BaseSGDClassifier, self).predict(X_transformed)
+#        rbf = self.rbf.get_RBFSampler()
+#        X_transformed = rbf.transform(X)
+#        return super(BaseSGDClassifier, self).predict(X_transformed)
 
-#        check_is_fitted(self, "coef_")
-#
-#        (n_samples, _) = X.shape
-#        n_classes = self.classes_.shape[0]
-#
-#        if n_classes > 2:
-#            transformed = np.zeros((n_samples, n_classes))
-#        else:
-#            transformed = np.zeros((n_samples,))
-#
-#        Y = np.zeros(n_samples)  # unused by us, needed for make_dataset...
-#        sample_weight = np.ones(n_samples, dtype=np.double)  # also unused
-#
-#        dataset, _ = make_dataset(X, Y, sample_weight)
-#
-#        self.rbf.transform_and_multiply_mat(dataset, self.coef_, transformed)
-#        scores = transformed + self.intercept_
-#
-#        scores = scores.ravel() if scores.shape[1] == 1 else scores
-#
-#        if len(scores.shape) == 1:
-#            indices = (scores > 0).astype(np.int)
-#        else:
-#            indices = scores.argmax(axis=1)
-#        return self.classes_[indices]
-#
+        check_is_fitted(self, "coef_")
+
+        (n_samples, _) = X.shape
+        n_classes = self.classes_.shape[0]
+
+        if n_classes > 2:
+            transformed = np.zeros((n_samples, n_classes))
+        else:
+            transformed = np.zeros((n_samples,))
+
+        Y = np.zeros(n_samples)  # unused by us, needed for make_dataset...
+        sample_weight = np.ones(n_samples, dtype=np.double)  # also unused
+
+        dataset, _ = make_dataset(X, Y, sample_weight)
+
+        self.rbf.transform_and_multiply_mat(dataset, self.coef_, transformed)
+        scores = transformed + self.intercept_
+
+        scores = scores.ravel() if scores.shape[1] == 1 else scores
+
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(np.int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
+
 
     # BaseSGDClassifier
     def _partial_fit(self, X, y, alpha, C,
