@@ -22,6 +22,7 @@ cdef extern from "sgd_fast_helpers.h":
 
 from sklearn.utils.weight_vector cimport WeightVector
 from sklearn.utils.seq_dataset cimport SequentialDataset
+from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
 
 np.import_array()
 
@@ -777,6 +778,12 @@ cdef class RBFSamplerInPlace:
         self.n_components = n_components
         self.random_weights_ = None
         self.random_offset_ = None
+
+    def get_RBFSampler(self):
+        rbf = RBFSampler(self.gamma, self.n_components)
+        rbf.random_weights_ = self.random_weights_
+        rbf.random_offset_ = self.random_offset_
+        return rbf
 
     def fit(self, n_features, random_state):
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
