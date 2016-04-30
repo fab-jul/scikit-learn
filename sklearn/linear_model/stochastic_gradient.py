@@ -370,6 +370,8 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
             return super(BaseSGDClassifier, self).predict(X)
 
         check_is_fitted(self, "coef_")
+        assert self.coef_.flags.c_contiguous, 'should be cont'
+        assert self.coef_.T.flags.c_contiguous, 'should be cont'
 
         (n_samples, _) = X.shape
         n_classes = self.classes_.shape[0]
