@@ -791,6 +791,8 @@ cdef void _test_dot(
     for i in range(n_components):
         print x_data_rbf[i]
 
+    cdef double[:, :] X_2d = np.zeros((1, n_features))
+    X_2d[1, :] = X
     real_rbf = rbf.get_RBFSampler()
     x_data_rbf = real_rbf.transform(X)
     print x_data_rbf
