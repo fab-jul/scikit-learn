@@ -373,7 +373,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
 
         (n_samples, _) = X.shape
 
-        if self.n_classes_ > 2:
+        if self.n_classes > 2:
             y = np.zeros((n_samples, n_classes))
         else:
             y = np.zeros((n_samples,))
