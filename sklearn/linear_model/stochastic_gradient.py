@@ -261,6 +261,8 @@ def fit_binary(est, i, X, y, alpha, C, learning_rate, n_iter,
 
     The i'th class is considered the "positive" class.
     """
+    print 'fit_binary'
+
     # if average is not true, average_coef, and average_intercept will be
     # unused
     y_i, coef, intercept, average_coef, average_intercept = \
@@ -386,6 +388,8 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
                      loss, learning_rate, n_iter,
                      classes, sample_weight,
                      coef_init, intercept_init):
+        print 'partial fit'
+
         X, y = check_X_y(X, y, accept_sparse='csr', dtype=np.float64, order="C",
                 warn_on_dtype=True)
 
@@ -500,6 +504,8 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         Each binary classifier predicts one class versus all others. This
         strategy is called OVA: One Versus All.
         """
+        print 'fit_multi'
+
         # Use joblib to fit OvA in parallel.
         result = Parallel(n_jobs=self.n_jobs, backend="threading",
                           verbose=self.verbose)(

@@ -548,6 +548,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                int average=0,
                RBFSamplerInPlace rbf=None):
 
+    print '_plain_sgd start'
+
     if rbf is not None:
         assert weights.shape[0] == rbf.n_components,\
                 'weights vector not scaled appropriately for RBF'
@@ -649,6 +651,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #            #x_ind_rbf_ptr = x_ind_ptr
 #            #xnnz_rbf = xnnz
 
+    print '_plain_sgd setup done'
 
     with nogil:
         for epoch in range(n_iter):
