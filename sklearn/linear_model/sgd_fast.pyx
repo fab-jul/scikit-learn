@@ -792,7 +792,7 @@ cdef void _test_dot(
         print x_data_rbf[i]
 
     real_rbf = rbf.get_RBFSampler()
-    x_data_rbf = rbf.transform(X)
+    x_data_rbf = real_rbf.transform(X)
     print x_data_rbf
 
 
