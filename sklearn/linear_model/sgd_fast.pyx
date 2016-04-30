@@ -655,7 +655,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
 
-                if verbose > 0:
+                if verbose > 1:
                     with gil:
                         print 'x: %s' % (' '.join(str(x_data_rbf_ptr[j])
                                          for j in range(xnnz_rbf)[:10]))
