@@ -155,8 +155,6 @@ cdef class ArrayDataset(SequentialDataset):
     and C-style memory layout.
     """
 
-    cdef public int n_samples, n_features
-
     def __cinit__(self, np.ndarray[double, ndim=2, mode='c'] X,
                   np.ndarray[double, ndim=1, mode='c'] Y,
                   np.ndarray[double, ndim=1, mode='c'] sample_weights,
@@ -221,8 +219,6 @@ cdef class ArrayDataset(SequentialDataset):
 
 cdef class CSRDataset(SequentialDataset):
     """A ``SequentialDataset`` backed by a scipy sparse CSR matrix. """
-
-    cdef public int n_samples, n_features
 
     def __cinit__(self, np.ndarray[double, ndim=1, mode='c'] X_data,
                   np.ndarray[int, ndim=1, mode='c'] X_indptr,
