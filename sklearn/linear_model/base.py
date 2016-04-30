@@ -333,7 +333,6 @@ class LinearClassifierMixin(ClassifierMixin):
         C : array, shape = [n_samples]
             Predicted class label per sample.
         """
-        print 'predicting...'
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
             indices = (scores > 0).astype(np.int)
