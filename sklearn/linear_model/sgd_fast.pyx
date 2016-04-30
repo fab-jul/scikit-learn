@@ -795,6 +795,8 @@ cdef class RBFSamplerInPlace:
         assert coef_num_rows == self.n_components, 'Invalid coef # of rows'
         assert y_num_rows == n_samples, 'Invalid Y # of rows'
         assert y_num_cols == n_classes, 'Invalid Y # of classes'
+        assert not np.isfortan(coef), 'Wrong array order: coef'
+        assert not np.isfortan(Y), 'Wrong array order: coef'
 
         self._transform_and_multiply_mat(dataset, coef, Y)
 
