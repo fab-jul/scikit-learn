@@ -776,6 +776,8 @@ cdef void _test_dot(
     cdef double* x_data_rbf_ptr = <double*>x_data_rbf.data
 
     cdef int i
+    for i in range(n_features):
+        print x_ind_ptr[i]
 
     cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
     rbf.random_weights_ = rw
