@@ -573,8 +573,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     # end. If there is an RBF Sampler, the x_ind_ptr_rbf and the xnnz_rbf
     # variables always hold the same value, namely all indices from 0 to
     # n_components-1 and n_components, respectively.
-    cdef double *x_data_ptr_rbf = NULL
-    cdef int *x_ind_ptr_rbf = NULL
+    cdef double *x_data_rbf_ptr = NULL
+    cdef int *x_ind_rbf_ptr = NULL
     cdef int xnnz_rbf
     cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
     cdef np.ndarray[np.int64_t, ndim=1, mode='c'] _x_ind_rbf
@@ -654,8 +654,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     print '_plain_sgd setup done'
 
     with nogil:
-        with gil:
-            print '%f' % x_data_rbf_ptr[0]
         for epoch in range(n_iter):
             if verbose > 0:
                 with gil:
@@ -677,7 +675,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 with gil:
                     print 'sample %i transfomed' % i
 
-                p = w.dot(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf) + intercept
+                p = w.dot(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf) + intercept
                 with gil:
                     print 'sample %i dot prod' % i
 
@@ -695,14 +693,14 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     class_weight = weight_neg
 
                 if learning_rate == PA1:
-                    update = sqnorm(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf)
+                    update = sqnorm(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf)
                     with gil:
                         print 'sample %i sqnorm' % i
                     if update == 0:
                         continue
                     update = min(C, loss.loss(p, y) / update)
                 elif learning_rate == PA2:
-                    update = sqnorm(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf)
+                    update = sqnorm(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf)
                     update = loss.loss(p, y) / (update + 0.5 / C)
                 else:
                     dloss = loss._dloss(p, y)
@@ -729,7 +727,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     # big: instead set the weights to zero
                     w.scale(max(0, 1.0 - ((1.0 - l1_ratio) * eta * alpha)))
                 if update != 0.0:
-                    w.add(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf, update)
+                    w.add(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf, update)
                     with gil:
                         print 'sample %i add' % i
 
@@ -741,7 +739,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     # average weights, this is done regardless as to whether
                     # the update is 0
 
-                    w.add_average(x_data_ptr_rbf, x_ind_ptr_rbf, xnnz_rbf,
+                    w.add_average(x_data_rbf_ptr, x_ind_ptr_rbf, xnnz_rbf,
                                   update, (t - average + 1))
                     average_intercept += ((intercept - average_intercept) /
                                           (t - average + 1))
@@ -872,7 +870,7 @@ cdef class RBFSamplerInPlace:
     # returns int so that exceptions can be passed to caller
     cdef int transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
-            double* x_data_ptr_rbf) nogil except -1:  # output
+            double* x_data_rbf_ptr) nogil except -1:  # output
         """
         Calculates
         1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
@@ -905,7 +903,7 @@ cdef class RBFSamplerInPlace:
             out_val = cos(out_val)  # 3.
             out_val *= self.factor_ # 4.
 
-            x_data_ptr_rbf[col] = out_val
+            x_data_rbf_ptr[col] = out_val
 
 
 cdef bint any_nonfinite(double *w, int n) nogil:
