@@ -386,7 +386,7 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
 
         dataset, _ = make_dataset(X, Y, sample_weight)
 
-        self.rbf.transform_and_multiply_mat(dataset, self.coef_.T, transformed)
+        self.rbf.transform_and_multiply_mat(dataset, self.coef_, transformed)
         scores = transformed + self.intercept_
 
         scores = scores.ravel() if scores.shape[1] == 1 else scores
