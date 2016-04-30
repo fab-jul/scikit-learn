@@ -791,6 +791,10 @@ cdef void _test_dot(
     for i in range(n_components):
         print x_data_rbf[i]
 
+    real_rbf = rbf.get_RBFSampler()
+    x_data_rbf = rbf.transform(X)
+    print x_data_rbf
+
 
 cdef class RBFSamplerInPlace:
     cdef public float gamma
