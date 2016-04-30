@@ -375,16 +375,17 @@ class BaseSGDClassifier(six.with_metaclass(ABCMeta, BaseSGD,
         n_classes = self.classes_.shape[0]
 
         if n_classes > 2:
-            y = np.zeros((n_samples, n_classes))
+            transformed = np.zeros((n_samples, n_classes))
         else:
-            y = np.zeros((n_samples,))
+            transformed = np.zeros((n_samples,))
 
-        sample_weight = np.ones(n_samples, dtype=np.double)
+        Y = np.zeros(n_samples)  # unused by us, needed for make_dataset...
+        sample_weight = np.ones(n_samples, dtype=np.double)  # also unused
 
-        dataset, _ = make_dataset(X, y, sample_weight)
+        dataset, _ = make_dataset(X, Y, sample_weight)
 
-        self.rbf.transform_and_multiply_mat(dataset, self.coef_.T, y)
-        scores = y + self.intercept_
+        self.rbf.transform_and_multiply_mat(dataset, self.coef_.T, transformed)
+        scores = transformed + self.intercept_
 
         scores = scores.ravel() if scores.shape[1] == 1 else scores
 
