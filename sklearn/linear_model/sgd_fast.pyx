@@ -589,8 +589,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_data_
     cdef double* rbf_random_weights_ptr_
     if rbf is not None:
-        rbf_random_weights_data_ = rbf.random_weights_.data
-        rbf_random_weights_ptr_ = <double*>rbf_random_weights_data_
+        rbf_random_weights_data_ = rbf.random_weights_
+        rbf_random_weights_ptr_ = <double*>rbf_random_weights_data_.data
 
     # get the data information into easy vars
     cdef Py_ssize_t n_samples = dataset.n_samples
