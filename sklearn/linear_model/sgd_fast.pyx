@@ -676,8 +676,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 # update RBF variables
                 if rbf is not None:
-                    rbf_line_profiler.runcall(rbf.transform,
-                            x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+                    with gil:
+                        rbf_line_profiler.runcall(rbf.transform,
+                                x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 #                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
                 else:
                     x_data_rbf_ptr = x_data_ptr
@@ -907,7 +908,7 @@ cdef class RBFSamplerInPlace:
 
     cdef void transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
-            double* x_data_rbf_ptr) nogil:  # output
+            double* x_data_rbf_ptr) #nogil:  # output
         """
         Calculates
         1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
