@@ -79,7 +79,7 @@ cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
 
 def test():
     cdef double[::1,:] a
-    cdef np.ndarrcy[double, ndim=1, mode='f'] x
+    cdef np.ndarray[double, ndim=1, mode='f'] x
     cdef double* x_ptr
     cdef np.ndarray[double, ndim=1, mode='f'] y
     cdef double* y_ptr
