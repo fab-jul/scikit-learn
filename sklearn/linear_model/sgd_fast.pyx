@@ -612,8 +612,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 'average_weights vector not scaled appropriately for RBF'
 
     # BLAS
-    cdef int m, n, lda, incX, incY
-    cdef double alpha, beta
+    cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
+    cdef double bl_alpha, bl_beta
 
 #    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_
 #    cdef double* rbf_random_weights_ptr_
@@ -712,13 +712,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         xnnz_rbf = rbf.n_components
 
     # BLAS
-    m = n_samples
-    n = rbf.n_components
-    lda = m
-    incX = 1
-    incY = 1
-    alpha = 1.0
-    beta = 0.0
+    bl_m = n_samples
+    bl_n = rbf.n_components
+    bl_lda = bl_m
+    bl_incX = 1
+    bl_incY = 1
+    bl_alpha = 1.0
+    bl_beta = 0.0
 
 
     with nogil:
@@ -761,11 +761,11 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #                        x_data_rbf_ptr[col] = out_val
 
                     dgemv('T',  # Transpose please
-                            &m, &n, &alpha,
-                            &rbf.random_weights_[0, 0], &lda,
-                            x_data_ptr, &incX,
-                            &beta,
-                            x_data_rbf_ptr, &incY)
+                            &bl_m, &bl_n, &bl_alpha,
+                            &rbf.random_weights_[0, 0], &bl_lda,
+                            x_data_ptr, &bl_incX,
+                            &bl_beta,
+                            x_data_rbf_ptr, &bl_incY)
 
                     with gil:
                         print 'survive'
