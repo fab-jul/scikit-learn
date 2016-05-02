@@ -27,8 +27,6 @@ from sklearn.utils.weight_vector cimport WeightVector
 from sklearn.utils.seq_dataset cimport SequentialDataset
 from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
 
-import line_profiler  #FJ
-
 np.import_array()
 
 # Penalty constants
@@ -408,6 +406,7 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     intercept : float
         The fitted intercept term.
     """
+    import line_profiler
     import sys
 
     profile = line_profiler.LineProfiler(_plain_sgd)
@@ -620,9 +619,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         q_data_ptr = <double * > q.data
 
     cdef double u = 0.0
-    cdef object rbf_line_profiler
-    if rbf is not None:
-        rbf_line_profiler = line_profiler.LineProfiler(rbf.transform)
 
     if penalty_type == L2:
         l1_ratio = 0.0
@@ -676,10 +672,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 # update RBF variables
                 if rbf is not None:
-                    with gil:
-                        rbf_line_profiler.runcall(rbf.transform,
-                                x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
-#                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
                 else:
                     x_data_rbf_ptr = x_data_ptr
                     x_ind_rbf_ptr = x_ind_ptr
@@ -833,9 +826,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
     w.reset_wscale()
 
-    if rbf is not None:
-        rbf_line_profiler.print_stats()
-
     return weights, intercept, average_weights, average_intercept
 
 
@@ -906,9 +896,9 @@ cdef class RBFSamplerInPlace:
         # calculate factor from step 4. below only once
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
-    def transform(self,
+    cdef void transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
-            double* x_data_rbf_ptr): #nogil:  # output
+            double* x_data_rbf_ptr) nogil:  # output
         """
         Calculates
         1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
