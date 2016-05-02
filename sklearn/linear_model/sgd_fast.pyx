@@ -586,6 +586,10 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 average_weights.shape[0] == rbf.n_components),\
                 'average_weights vector not scaled appropriately for RBF'
 
+    cdef double* rbf_random_weights_ptr_
+    if rbf is not None:
+        rbf_random_weights_ptr_ = <double*>rbf.random_weights_.data
+
     # get the data information into easy vars
     cdef Py_ssize_t n_samples = dataset.n_samples
     cdef Py_ssize_t n_features = weights.shape[0]
@@ -718,7 +722,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     dgemv(CblasRowMajor, CblasTrans,
                             n_samples, rbf.n_components,  # M, N
                             1.0,  # alpha
-                            rbf.random_weights_ptr_,  # A
+                            rbf_random_weights_ptr_,  # A
                             1,  # LDA
                             x_data_ptr, 1,  # X, incX
                             0.0,  # beta
@@ -924,7 +928,6 @@ cdef class RBFSamplerInPlace:
     cdef public float gamma
     cdef public int n_components
     cdef double[:, :] random_weights_
-    cdef double* random_weights_ptr_
     cdef double[:] random_offset_
     cdef public double factor_
 
@@ -944,7 +947,6 @@ cdef class RBFSamplerInPlace:
     def fit(self, n_features, random_state):
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
             size=(n_features, self.n_components)))
-        self.random_weights_ptr_ = <double*>self.random_weights_.data
 
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,
                                                    size=self.n_components)
