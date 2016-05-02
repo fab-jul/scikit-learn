@@ -591,6 +591,17 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
     cdef np.ndarray[int, ndim=1, mode='c'] _x_ind_rbf
 
+### HAND INLINED ####
+    # current column in random_weights_
+    cdef int col
+
+    # current component when doing multiplication, see below
+    cdef int idx
+
+    # holds value for x_i * random_weights_[:, col] before it gets written
+    cdef double out_val
+### / HAND INLINED ####
+
     # helper variables
     cdef bint infinity = False
     cdef double eta = 0.0
@@ -672,7 +683,23 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 # update RBF variables
                 if rbf is not None:
-                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+#### BEGIN hand inlined ####
+#                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+
+                    for col in range(rbf.n_components):
+                        out_val = 0
+                        for i in range(xnnz):  # 1.
+                            idx = x_ind_ptr[i]  
+                            out_val += (x_data_ptr[i] *
+                                    rbf.random_weights_[idx, col])
+                        out_val += rbf.random_offset_[col]  # 2.
+                        out_val = cos(out_val)  # 3.
+                        out_val *= rbf.factor_  # 4.
+
+                    x_data_rbf_ptr[col] = out_val
+
+
+#### END   hand inlined ####
                 else:
                     x_data_rbf_ptr = x_data_ptr
                     x_ind_rbf_ptr = x_ind_ptr
