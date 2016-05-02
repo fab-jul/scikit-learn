@@ -28,6 +28,7 @@ from sklearn.utils.seq_dataset cimport SequentialDataset
 from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
 
 import line_profiler  #FJ
+cimport line_profiler  #FJ
 
 
 np.import_array()
