@@ -586,11 +586,11 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 average_weights.shape[0] == rbf.n_components),\
                 'average_weights vector not scaled appropriately for RBF'
 
-    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_data_
-    cdef double* rbf_random_weights_ptr_
-    if rbf is not None:
-        rbf_random_weights_data_ = rbf.random_weights_
-        rbf_random_weights_ptr_ = <double*>rbf_random_weights_data_.data
+#    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_
+#    cdef double* rbf_random_weights_ptr_
+#    if rbf is not None:
+#        rbf_random_weights_ = rbf.random_weights_
+#        rbf_random_weights_ptr_ = <double*>rbf_random_weights_.data
 
     # get the data information into easy vars
     cdef Py_ssize_t n_samples = dataset.n_samples
@@ -724,7 +724,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     dgemv(CblasRowMajor, CblasTrans,
                             n_samples, rbf.n_components,  # M, N
                             1.0,  # alpha
-                            rbf_random_weights_ptr_,  # A
+                            &rbf.random_weights_[0,0],  # A
                             1,  # LDA
                             x_data_ptr, 1,  # X, incX
                             0.0,  # beta
