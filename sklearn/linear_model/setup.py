@@ -13,7 +13,7 @@ def configuration(parent_package='', top_path=None):
 
     cblas_libs, blas_info = get_blas_info()
     def_macros = blas_info.get('define_macros')  # FJ
-    def_macros.append('CYTHON_TRACE')  # FJ
+    def_macros.append(('CYTHON_TRACE', '1'))  # FJ
 
     if os.name == 'posix':
         cblas_libs.append('m')
