@@ -716,7 +716,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #                        x_data_rbf_ptr[col] = out_val
 
                     dgemv(CblasRowMajor, CblasTrans,
-                            n_samples, bf.n_components,  # M, N
+                            n_samples, rbf.n_components,  # M, N
                             1.0,  # alpha
                             rbf.random_weights_ptr_,  # A
                             1,  # LDA
