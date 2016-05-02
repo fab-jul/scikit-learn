@@ -106,7 +106,7 @@ def test():
             &beta,
             y_ptr, &incY)
     print(np.asarray(y))
-    print(np.dot(x, a.T))
+    print(np.dot(x, a))
 
 
 from sklearn.utils.weight_vector cimport WeightVector
