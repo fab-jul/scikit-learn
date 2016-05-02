@@ -28,8 +28,7 @@ from sklearn.utils.seq_dataset cimport SequentialDataset
 from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
 
 import line_profiler  #FJ
-cimport line_profiler  #FJ
-
+from line_profiler cimport LineProfiler
 
 np.import_array()
 
@@ -622,7 +621,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         q_data_ptr = <double * > q.data
 
     cdef double u = 0.0
-    cdef line_profiler.LineProfiler l
+    cdef LineProfiler l
     if rbf is not None:
         l = line_profiler.LineProfiler(rbf.transform)
 
