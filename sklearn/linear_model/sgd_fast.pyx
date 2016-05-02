@@ -658,6 +658,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     # BLAS
     cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
     cdef double bl_alpha, bl_beta
+    cdef double* rbf_random_weights_ptr = &rbf.random_weights_[0, 0]
 
 #    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_
 #    cdef double* rbf_random_weights_ptr_
@@ -806,7 +807,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                     dgemv('T',  # Transpose please
                             &bl_m, &bl_n, &bl_alpha,
-                            &rbf.random_weights_[0, 0], &bl_lda,
+                            rbf_random_weights_ptr, &bl_lda,
                             x_data_ptr, &bl_incX,
                             &bl_beta,
                             x_data_rbf_ptr, &bl_incY)
