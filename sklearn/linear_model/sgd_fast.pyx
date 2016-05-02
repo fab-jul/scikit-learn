@@ -908,7 +908,7 @@ cdef class RBFSamplerInPlace:
 
     cdef void transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
-            double* x_data_rbf_ptr) #nogil:  # output
+            double* x_data_rbf_ptr): #nogil:  # output
         """
         Calculates
         1. projection = safe_sparse_dot(X, self.random_weights_)  # dot product
