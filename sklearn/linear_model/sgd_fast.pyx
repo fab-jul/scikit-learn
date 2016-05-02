@@ -766,7 +766,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     bl_beta = 0.0
 
     print '%d %d %d %d %d %f %f' % (
-            bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
+            bl_m, bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
 
     with nogil:
         for epoch in range(n_iter):
