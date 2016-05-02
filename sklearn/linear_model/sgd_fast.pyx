@@ -430,7 +430,9 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           intercept_decay,
                           average=0,
                           rbf=rbf)
+    print 'wat'
     profile.print_stats()
+    print 'why'
     sys.exit(1)
     return standard_weights, standard_intercept
 
