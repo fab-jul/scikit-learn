@@ -30,6 +30,7 @@ def configuration(parent_package='', top_path=None):
                                        numpy.get_include(),
                                        blas_info.pop('include_dirs', [])],
                          libraries=cblas_libs,
+                         define_macros=[('CYTHON_TRACE', '1')],  # FJ
                          extra_compile_args=blas_info.pop('extra_compile_args',
                                                           []),
                          **blas_info)

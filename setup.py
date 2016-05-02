@@ -176,6 +176,12 @@ def get_numpy_status():
 def generate_cython():
     cwd = os.path.abspath(os.path.dirname(__file__))
     print("Cythonizing sources")
+
+    #FJ
+    from Cython.Compiler.Options import directive_defaults
+    directive_defaults['linetrace'] = True
+    directive_defaults['binding'] = True
+
     p = subprocess.call([sys.executable, os.path.join(cwd,
                                                       'build_tools',
                                                       'cythonize.py'),
