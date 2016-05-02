@@ -406,8 +406,12 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     intercept : float
         The fitted intercept term.
     """
+    import line_profiler
+
+    profile = line_profiler.LineProfiler(_plain_sgd)
+
     standard_weights, standard_intercept,\
-        _, _ = _plain_sgd(weights,
+        _, _ = profile.runcall(_plain_sgd, weights,
                           intercept,
                           None,
                           0,
@@ -425,6 +429,7 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           intercept_decay,
                           average=0,
                           rbf=rbf)
+    profile.print_stats()
     return standard_weights, standard_intercept
 
 
