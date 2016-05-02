@@ -100,12 +100,13 @@ def test():
     lda = 2
     incX = 1
     incY = 1
-    dgemv('T',  # Transpose please
-            &m, &n, &alpha,
-            &a[0, 0], &lda,
-            x_ptr, &incX,
-            &beta,
-            y_ptr, &incY)
+    with nogil:
+        dgemv('T',  # Transpose please
+                &m, &n, &alpha,
+                &a[0, 0], &lda,
+                x_ptr, &incX,
+                &beta,
+                y_ptr, &incY)
     print(np.asarray(y))
     print(np.dot(x, a))
 
