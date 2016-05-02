@@ -12,6 +12,8 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('linear_model', parent_package, top_path)
 
     cblas_libs, blas_info = get_blas_info()
+    def_macros = blas_info.get('define_macros')  # FJ
+    def_macros.append('CYTHON_TRACE')  # FJ
 
     if os.name == 'posix':
         cblas_libs.append('m')
@@ -30,7 +32,7 @@ def configuration(parent_package='', top_path=None):
                                        numpy.get_include(),
                                        blas_info.pop('include_dirs', [])],
                          libraries=cblas_libs,
-                         define_macros=[('CYTHON_TRACE', '1')],  # FJ
+#                         define_macros=[('CYTHON_TRACE', '1')],  # FJ
                          extra_compile_args=blas_info.pop('extra_compile_args',
                                                           []),
                          **blas_info)
