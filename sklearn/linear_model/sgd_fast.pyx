@@ -729,6 +729,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                             x_data_ptr, 1,  # X, incX
                             0.0,  # beta
                             x_data_rbf_ptr, 1)  # y
+                    with gil:
+                        print 'survive'
 
 
 #### END   hand inlined ####
