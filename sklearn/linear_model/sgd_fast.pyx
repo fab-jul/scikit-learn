@@ -97,7 +97,6 @@ def test():
     lda = 2
     m = 2
     n = 2
-    dgemm("N", "N", &m, &n, &k, &alpha, &a[0,0], &lda, &b[0,0], &ldb, &beta, &c[0,0], &ldc)
     dgemv('T',  # Transpose please
             &m, &n, &alpha,
             &a[0, 0], &lda,
