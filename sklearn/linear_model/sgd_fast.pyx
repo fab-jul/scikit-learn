@@ -464,11 +464,11 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     import line_profiler
     import sys
 
-    profile = line_profiler.LineProfiler(_plain_sgd)
+#    profile = line_profiler.LineProfiler(_plain_sgd)
 
-#        _, _ = _plain_sgd(weights,
+#        _, _ = profile.runcall(_plain_sgd, weights,
     standard_weights, standard_intercept,\
-        _, _ = profile.runcall(_plain_sgd, weights,
+        _, _ = _plain_sgd(weights,
                           intercept,
                           None,
                           0,
@@ -486,8 +486,8 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           intercept_decay,
                           average=0,
                           rbf=rbf)
-    profile.print_stats()
-    sys.exit(1)
+#    profile.print_stats()
+#    sys.exit(1)
     return standard_weights, standard_intercept
 
 
