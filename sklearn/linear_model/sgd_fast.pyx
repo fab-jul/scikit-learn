@@ -94,9 +94,11 @@ def test():
 
     alpha = 1.0
     beta = 0.0
-    lda = 2
     m = 2
     n = 2
+    lda = 2
+    incX = 1
+    incY = 1
     dgemv('T',  # Transpose please
             &m, &n, &alpha,
             &a[0, 0], &lda,
