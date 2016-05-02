@@ -20,6 +20,22 @@ cdef extern from "cblas.h":
     void daxpy "cblas_daxpy" (int, double, const double*,
                               int, double*, int) nogil
 
+    enum CBLAS_ORDER:
+        CblasRowMajor=101
+        CblasColMajor=102
+    enum CBLAS_TRANSPOSE:
+        CblasNoTrans=111
+        CblasTrans=112
+        CblasConjTrans=113
+        AtlasConj=114
+
+    void dgemv "cblas_dgemv"(CBLAS_ORDER Order,
+                      CBLAS_TRANSPOSE TransA, int M, int N,
+                      double alpha, double *A, int lda,
+                      double *X, int incX, double beta,
+                      double *Y, int incY) nogil
+    
+
 
 np.import_array()
 

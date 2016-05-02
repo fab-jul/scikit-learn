@@ -23,6 +23,25 @@ cimport numpy as np
 cdef extern from "sgd_fast_helpers.h":
     bint skl_isfinite(double) nogil
 
+
+cdef extern from "cblas.h":
+    enum CBLAS_ORDER:
+        CblasRowMajor=101
+        CblasColMajor=102
+    enum CBLAS_TRANSPOSE:
+        CblasNoTrans=111
+        CblasTrans=112
+        CblasConjTrans=113
+        AtlasConj=114
+
+    void dgemv "cblas_dgemv"(CBLAS_ORDER Order,
+                      CBLAS_TRANSPOSE TransA, int M, int N,
+                      double alpha, double *A, int lda,
+                      double *X, int incX, double beta,
+                      double *Y, int incY) nogil
+
+
+
 from sklearn.utils.weight_vector cimport WeightVector
 from sklearn.utils.seq_dataset cimport SequentialDataset
 from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
@@ -684,17 +703,25 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #### BEGIN hand inlined ####
 #                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 
-                    for col in range(rbf.n_components):
-                        out_val = 0
-                        for i in range(xnnz):  # 1.
-                            idx = x_ind_ptr[i]
-                            out_val += (x_data_ptr[i] *
-                                    rbf.random_weights_[idx, col])
-                        out_val += rbf.random_offset_[col]  # 2.
-                        out_val = cos(out_val)  # 3.
-                        out_val *= rbf.factor_  # 4.
+#                    for col in range(rbf.n_components):
+#                        out_val = 0
+#                        for i in range(xnnz):  # 1.
+#                            idx = x_ind_ptr[i]
+#                            out_val += (x_data_ptr[i] *
+#                                    rbf.random_weights_[idx, col])
+#                        out_val += rbf.random_offset_[col]  # 2.
+#                        out_val = cos(out_val)  # 3.
+#                        out_val *= rbf.factor_  # 4.
+#
+#                        x_data_rbf_ptr[col] = out_val
 
-                        x_data_rbf_ptr[col] = out_val
+                    dgemv(CblasRowMajor, CblasTrans, n_samples, n_components,
+                            1.0,  # alpha
+                            rbf.random_weights_ptr_,  # A
+                            1,  # LDA
+                            x_data_ptr, 1,  # X, incX
+                            0.0,  # beta
+                            x_data_rbf_ptr, 1)  # y
 
 
 #### END   hand inlined ####
@@ -896,6 +923,7 @@ cdef class RBFSamplerInPlace:
     cdef public float gamma
     cdef public int n_components
     cdef double[:, :] random_weights_
+    cdef double* random_weights_ptr_
     cdef double[:] random_offset_
     cdef public double factor_
 
@@ -915,6 +943,8 @@ cdef class RBFSamplerInPlace:
     def fit(self, n_features, random_state):
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
             size=(n_features, self.n_components)))
+        self.random_weights_ptr_ = <double*>self.random_weights_.data
+
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,
                                                    size=self.n_components)
 
