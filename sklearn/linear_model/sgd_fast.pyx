@@ -782,6 +782,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
+                with gil:
+                    print 'xnnz %d' % xnnz
+
 #                ###
 #                if verbose > 0:
 #                    with gil:
@@ -804,6 +807,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #                        out_val *= rbf.factor_  # 4.
 #
 #                        x_data_rbf_ptr[col] = out_val
+                    with gil:
+                        print 'hi'
+                    
 
                     dgemv('T',  # Transpose please
                             &bl_m, &bl_n, &bl_alpha,
