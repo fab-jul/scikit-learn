@@ -3,7 +3,6 @@
 # cython: wraparound=False
 # cython: profile=True
 # cython: linetrace=True
-# distutils: define_macros=CYTHON_TRACE_NOGIL=1
 #
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Mathieu Blondel (partial_fit support)
