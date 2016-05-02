@@ -28,7 +28,6 @@ from sklearn.utils.seq_dataset cimport SequentialDataset
 from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
 
 import line_profiler  #FJ
-from line_profiler cimport LineProfiler
 
 np.import_array()
 
@@ -621,9 +620,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         q_data_ptr = <double * > q.data
 
     cdef double u = 0.0
-    cdef LineProfiler l
+    cdef object rbf_line_profiler
     if rbf is not None:
-        l = line_profiler.LineProfiler(rbf.transform)
+        rbf_line_profiler = line_profiler.LineProfiler(rbf.transform)
 
     if penalty_type == L2:
         l1_ratio = 0.0
@@ -677,7 +676,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 # update RBF variables
                 if rbf is not None:
-                    l.runcall(rbf.transform,
+                    rbf_line_profiler.runcall(rbf.transform,
                             x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 #                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
                 else:
@@ -834,7 +833,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     w.reset_wscale()
 
     if rbf is not None:
-        l.print_stats()
+        rbf_line_profiler.print_stats()
 
     return weights, intercept, average_weights, average_intercept
 
