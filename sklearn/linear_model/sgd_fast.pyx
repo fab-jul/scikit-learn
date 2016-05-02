@@ -646,7 +646,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 if i % 100 == 0:
                     with gil:
                         print('%i: %f' % (i, time() - t_per_hundred))
-                    t_per_hundred = time()
+                        t_per_hundred = time()
 
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
