@@ -645,6 +645,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("did load ")
+                ###
+
                 # update RBF variables
                 if rbf is not None:
                     rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
@@ -652,6 +658,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     x_data_rbf_ptr = x_data_ptr
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
+
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("did transform ")
+                ###
 
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
 
@@ -666,6 +678,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 elif learning_rate == INVSCALING:
                     eta = eta0 / pow(t, power_t)
 
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("1 ")
+                ###
+
                 if verbose > 0:
                     sumloss += loss.loss(p, y)
 
@@ -673,6 +691,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     class_weight = weight_pos
                 else:
                     class_weight = weight_neg
+
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("2 ")
+                ###
 
                 if learning_rate == PA1:
                     update = sqnorm(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf)
@@ -692,6 +716,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                         dloss = MAX_DLOSS
                     update = -eta * dloss
 
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("3 ")
+                ###
+
                 if learning_rate >= PA1:
                     if is_hinge:
                         # classification
@@ -699,6 +729,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     elif y - p < 0:
                         # regression
                         update *= -1
+
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("4 ")
+                ###
 
                 update *= class_weight * sample_weight
 
@@ -712,6 +748,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     if fit_intercept == 1:
                         intercept += update * intercept_decay
 
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("5 ")
+                ###
+
                 if 0 < average <= t:
                     # compute the average for the intercept and update the
                     # average weights, this is done regardless as to whether
@@ -722,10 +764,22 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     average_intercept += ((intercept - average_intercept) /
                                           (t - average + 1))
 
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("6 ")
+                ###
+
                 if penalty_type == L1 or penalty_type == ELASTICNET:
                     # FJ unmodified
                     u += (l1_ratio * eta * alpha)
                     l1penalty(w, q_data_ptr, x_ind_ptr, xnnz, u)
+
+                ###
+                if verbose > 0:
+                    with gil:
+                        print("7 ")
+                ###
 
                 t += 1
                 count += 1
