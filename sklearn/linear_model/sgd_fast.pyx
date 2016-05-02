@@ -89,7 +89,7 @@ def test():
     a = np.array([[1, 2, 3], [4, 5, 6]], np.double, order="F")
     x = np.array([9, 10], np.double, order="c")
     x_ptr = <double*>x.data
-    y = np.array([0, 0], np.double, order="F")
+    y = np.array([0, 0, 0], np.double, order="F")
     y_ptr = <double*>y.data
 
     alpha = 1.0
