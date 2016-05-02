@@ -2,6 +2,8 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 # cython: profile=True
+# cython: linetrace=True
+# distutils: define_macros=CYTHON_TRACE_NOGIL=1
 #
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Mathieu Blondel (partial_fit support)
@@ -643,7 +645,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     print("-- Epoch %d" % (epoch + 1))
             if shuffle:
                 dataset.shuffle(seed)
-            for i in range(min(n_samples, 1000)):
+            for i in range(min(n_samples, 100)):
                 if i % 100 == 0:
                     with gil:
                         print('%i: %f' % (i, time() - t_per_hundred))
