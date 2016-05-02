@@ -906,7 +906,7 @@ cdef class RBFSamplerInPlace:
         # calculate factor from step 4. below only once
         self.factor_ = np.sqrt(2.) / np.sqrt(self.n_components)
 
-    cdef void transform(self,
+    def transform(self,
             double* x_data_ptr, int* x_ind_ptr, int xnnz,  # data to transform
             double* x_data_rbf_ptr): #nogil:  # output
         """
