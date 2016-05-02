@@ -23,22 +23,47 @@ cimport numpy as np
 cdef extern from "sgd_fast_helpers.h":
     bint skl_isfinite(double) nogil
 
+import scipy.linalg.blas
 
-cdef extern from "cblas.h":
-    enum CBLAS_ORDER:
-        CblasRowMajor=101
-        CblasColMajor=102
-    enum CBLAS_TRANSPOSE:
-        CblasNoTrans=111
-        CblasTrans=112
-        CblasConjTrans=113
-        AtlasConj=114
+cdef extern from "f2pyptr.h":
+#    enum CBLAS_ORDER:
+#        CblasRowMajor=101
+#        CblasColMajor=102
+#    enum CBLAS_TRANSPOSE:
+#        CblasNoTrans=111
+#        CblasTrans=112
+#        CblasConjTrans=113
+#        AtlasConj=114
+    void *f2py_pointer(object) except NULL
 
-    void dgemv "cblas_dgemv"(CBLAS_ORDER Order,
-                      CBLAS_TRANSPOSE TransA, int M, int N,
-                      double alpha, double *A, int lda,
-                      double *X, int incX, double beta,
-                      double *Y, int incY) nogil
+# maybe int return
+ctypedef void dgemv_t(
+	char *trans,
+	int *m, int *n,
+	double *alpha,
+	double *a, int *lda,
+        double *x, int *incX,
+	double *beta,
+	double *y, int *incY)
+
+# Since Scipy >= 0.12.0
+cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
+
+#cdef extern from "cblas.h":
+#    enum CBLAS_ORDER:
+#        CblasRowMajor=101
+#        CblasColMajor=102
+#    enum CBLAS_TRANSPOSE:
+#        CblasNoTrans=111
+#        CblasTrans=112
+#        CblasConjTrans=113
+#        AtlasConj=114
+#
+#    void dgemv "cblas_dgemv"(CBLAS_ORDER Order,
+#                      CBLAS_TRANSPOSE TransA, int M, int N,
+#                      double alpha, double *A, int lda,
+#                      double *X, int incX, double beta,
+#                      double *Y, int incY) nogil
 
 
 
@@ -586,6 +611,10 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 average_weights.shape[0] == rbf.n_components),\
                 'average_weights vector not scaled appropriately for RBF'
 
+    # BLAS
+    cdef int m, n, lda, incX, incY
+    cdef double alpha, beta
+
 #    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_
 #    cdef double* rbf_random_weights_ptr_
 #    if rbf is not None:
@@ -682,6 +711,16 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_ind_rbf_ptr = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
+    # BLAS
+    m = n_samples
+    n = rbf.n_components
+    lda = m
+    incX = 1
+    incY = 1
+    alpha = 1.0
+    beta = 0.0
+
+
     with nogil:
         for epoch in range(n_iter):
             if verbose > 0:
@@ -721,14 +760,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #
 #                        x_data_rbf_ptr[col] = out_val
 
-                    dgemv(CblasRowMajor, CblasTrans,
-                            n_samples, rbf.n_components,  # M, N
-                            1.0,  # alpha
-                            &rbf.random_weights_[0,0],  # A
-                            n_samples,  # LDA
-                            x_data_ptr, 1,  # X, incX
-                            0.0,  # beta
-                            x_data_rbf_ptr, 1)  # y
+                    dgemv('T',  # Transpose please
+                            &m, &n, &alpha,
+                            &rbf.random_weights_[0, 0], &lda,
+                            x_data_ptr, &incX,
+                            &beta,
+                            x_data_rbf_ptr, &incY)
+
                     with gil:
                         print 'survive'
 
@@ -931,7 +969,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 cdef class RBFSamplerInPlace:
     cdef public float gamma
     cdef public int n_components
-    cdef double[:, :] random_weights_
+    cdef double[::1, :] random_weights_  # FORTRAN style
     cdef double[:] random_offset_
     cdef public double factor_
 
