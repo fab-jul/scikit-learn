@@ -622,6 +622,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         optimal_init = 1.0 / (initial_eta0 * alpha)
 
     t_start = time()
+    t_per_hundred = time()
 
     if rbf is not None:
         # if there is an RBF, this is the memory that holds the current
@@ -642,8 +643,10 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
             if shuffle:
                 dataset.shuffle(seed)
             for i in range(n_samples):
-                with gil:
-                    print('%i' % i)
+                if i % 100 == 0:
+                    with gil:
+                        print('%i: %f' % (i, time() - t_per_hundred))
+                    t_per_hundred = time()
 
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
