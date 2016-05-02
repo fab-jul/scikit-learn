@@ -725,7 +725,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                             n_samples, rbf.n_components,  # M, N
                             1.0,  # alpha
                             &rbf.random_weights_[0,0],  # A
-                            rbf.n_components,  # LDA
+                            n_samples,  # LDA
                             x_data_ptr, 1,  # X, incX
                             0.0,  # beta
                             x_data_rbf_ptr, 1)  # y
