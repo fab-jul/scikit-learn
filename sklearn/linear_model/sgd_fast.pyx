@@ -3,6 +3,7 @@
 # cython: wraparound=False
 # cython: profile=True
 # cython: linetrace=True
+# cython: binding=True
 #
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Mathieu Blondel (partial_fit support)
@@ -431,6 +432,7 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           rbf=rbf)
     print 'wat'
     profile.print_stats()
+    print profile.get_stats()
     print 'why'
     sys.exit(1)
     return standard_weights, standard_intercept
