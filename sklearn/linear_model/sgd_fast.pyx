@@ -77,6 +77,36 @@ cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
 #                      double *Y, int incY) nogil
 
 
+def test():
+    cdef double[::1,:] a
+    cdef np.ndarrcy[double, ndim=1, mode='f'] x
+    cdef double* x_ptr
+    cdef np.ndarray[double, ndim=1, mode='f'] y
+    cdef double* y_ptr
+    cdef int m, n, lda, incX, incY
+    cdef double alpha, beta
+
+    a = np.array([[1, 2], [3, 4]], np.double, order="F")
+    x = np.array([9, 10], np.double, order="F")
+    x_ptr = <double*>x.data
+    y = np.array([0, 0], np.double, order="F")
+    y_ptr = <double*>y.data
+
+    alpha = 1.0
+    beta = 0.0
+    lda = 2
+    m = 2
+    n = 2
+    dgemm("N", "N", &m, &n, &k, &alpha, &a[0,0], &lda, &b[0,0], &ldb, &beta, &c[0,0], &ldc)
+    dgemv('T',  # Transpose please
+            &m, &n, &alpha,
+            &a[0, 0], &lda,
+            x_ptr, &incX,
+            &beta,
+            y_ptr, &incY)
+    print(np.asarray(y))
+    print(np.dot(a, b))
+
 
 from sklearn.utils.weight_vector cimport WeightVector
 from sklearn.utils.seq_dataset cimport SequentialDataset
@@ -464,11 +494,11 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     import line_profiler
     import sys
 
-#    profile = line_profiler.LineProfiler(_plain_sgd)
+    profile = line_profiler.LineProfiler(_plain_sgd)
 
-#        _, _ = profile.runcall(_plain_sgd, weights,
+#        _, _ = _plain_sgd(weights,
     standard_weights, standard_intercept,\
-        _, _ = _plain_sgd(weights,
+        _, _ = profile.runcall(_plain_sgd, weights,
                           intercept,
                           None,
                           0,
@@ -486,8 +516,8 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           intercept_decay,
                           average=0,
                           rbf=rbf)
-#    profile.print_stats()
-#    sys.exit(1)
+    profile.print_stats()
+    sys.exit(1)
     return standard_weights, standard_intercept
 
 
