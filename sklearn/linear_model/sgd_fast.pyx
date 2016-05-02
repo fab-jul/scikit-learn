@@ -1,6 +1,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: profile=True
 #
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Mathieu Blondel (partial_fit support)
