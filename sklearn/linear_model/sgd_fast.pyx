@@ -25,7 +25,6 @@ cdef extern from "sgd_fast_helpers.h":
 
 import scipy.linalg.blas
 
-cdef extern from "f2pyptr.h":
 #    enum CBLAS_ORDER:
 #        CblasRowMajor=101
 #        CblasColMajor=102
@@ -34,7 +33,19 @@ cdef extern from "f2pyptr.h":
 #        CblasTrans=112
 #        CblasConjTrans=113
 #        AtlasConj=114
-    void *f2py_pointer(object) except NULL
+
+from cpython cimport (PY_VERSION_HEX, PyCObject_Check,
+    PyCObject_AsVoidPtr, PyCapsule_CheckExact, PyCapsule_GetPointer)
+
+cdef void* f2py_pointer(obj):
+    if PY_VERSION_HEX < 0x03000000:
+        if (PyCObject_Check(obj)):
+            return PyCObject_AsVoidPtr(obj)
+    elif PY_VERSION_HEX >= 0x02070000:
+        if (PyCapsule_CheckExact(obj)):
+            return PyCapsule_GetPointer(obj, NULL);
+    raise ValueError("Not an object containing a void ptr")
+
 
 # maybe int return
 ctypedef void dgemv_t(
