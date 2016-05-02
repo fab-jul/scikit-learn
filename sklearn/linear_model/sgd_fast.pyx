@@ -44,7 +44,7 @@ ctypedef void dgemv_t(
 	double *a, int *lda,
         double *x, int *incX,
 	double *beta,
-	double *y, int *incY)
+	double *y, int *incY) nogil
 
 # Since Scipy >= 0.12.0
 cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
