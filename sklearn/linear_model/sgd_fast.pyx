@@ -998,8 +998,9 @@ cdef class RBFSamplerInPlace:
         return rbf
 
     def fit(self, n_features, random_state):
-        self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
-            size=(n_features, self.n_components)))
+        self.random_weights_ = np.asarray((np.sqrt(2 * self.gamma) *
+            random_state.normal(size=(n_features, self.n_components)),
+            dtype=double, order='F')
 
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,
                                                    size=self.n_components)
