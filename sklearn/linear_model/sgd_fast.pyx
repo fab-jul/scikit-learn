@@ -27,6 +27,9 @@ from sklearn.utils.weight_vector cimport WeightVector
 from sklearn.utils.seq_dataset cimport SequentialDataset
 from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
 
+import line_profiler  #FJ
+
+
 np.import_array()
 
 # Penalty constants
@@ -406,7 +409,6 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     intercept : float
         The fitted intercept term.
     """
-    import line_profiler
     import sys
 
     profile = line_profiler.LineProfiler(_plain_sgd)
@@ -619,6 +621,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         q_data_ptr = <double * > q.data
 
     cdef double u = 0.0
+    cdef line_profiler.LineProfiler l
+    if rbf is not None:
+        l = line_profiler.LineProfiler(rbf.transform)
 
     if penalty_type == L2:
         l1_ratio = 0.0
@@ -672,7 +677,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                 # update RBF variables
                 if rbf is not None:
-                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+                    l.runcall(rbf.transform,
+                            x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+#                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
                 else:
                     x_data_rbf_ptr = x_data_ptr
                     x_ind_rbf_ptr = x_ind_ptr
@@ -825,6 +832,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           " MinMaxScaler might help.") % (epoch + 1))
 
     w.reset_wscale()
+
+    if rbf is not None:
+        l.print_stats()
 
     return weights, intercept, average_weights, average_intercept
 
