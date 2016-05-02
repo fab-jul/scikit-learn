@@ -86,7 +86,7 @@ def test():
     cdef int m, n, lda, incX, incY
     cdef double alpha, beta
 
-    a = np.array([[1, 2], [3, 4]], np.double, order="F")
+    a = np.array([[1, 2, 3], [4, 5, 6]], np.double, order="F")
     x = np.array([9, 10], np.double, order="c")
     x_ptr = <double*>x.data
     y = np.array([0, 0], np.double, order="F")
@@ -95,7 +95,7 @@ def test():
     alpha = 1.0
     beta = 0.0
     m = 2
-    n = 2
+    n = 3
     lda = 2
     incX = 1
     incY = 1
