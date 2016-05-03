@@ -1038,7 +1038,7 @@ cdef class RBFSamplerInPlace:
         bl_beta = 1.0
 
         # setup for gemv
-        for col in range(rbf.n_components):
+        for col in range(self.n_components):
             x_data_rbf_ptr[col] = self.random_offset_[col]
 
         dgemv('T',  # Transpose please
@@ -1048,7 +1048,7 @@ cdef class RBFSamplerInPlace:
             &bl_beta,
             x_data_rbf_ptr, &bl_incY)
 
-        for col in range(rbf.n_components):
+        for col in range(self.n_components):
             x_data_rbf_ptr[col] = self.factor_ * cos(x_data_rbf_ptr[col])
 
 #        # current column in random_weights_
