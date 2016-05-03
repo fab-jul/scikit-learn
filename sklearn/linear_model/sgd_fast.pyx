@@ -806,19 +806,19 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 if rbf is not None:
 #### BEGIN hand inlined ####
 
-                    for col in range(rbf.n_components):
-                        out_val = 0
-                        for i in range(xnnz):  # 1.
-                            idx = x_ind_ptr[i]
-                            out_val += (x_data_ptr[i] *
-                                    rbf.random_weights_[idx, col])
-                        out_val += rbf.random_offset_[col]  # 2.
-                        out_val = cos(out_val)  # 3.
-                        out_val *= rbf.factor_  # 4.
+#                    for col in range(rbf.n_components):
+#                        out_val = 0
+#                        for i in range(xnnz):  # 1.
+#                            idx = x_ind_ptr[i]
+#                            out_val += (x_data_ptr[i] *
+#                                    rbf.random_weights_[idx, col])
+#                        out_val += rbf.random_offset_[col]  # 2.
+#                        out_val = cos(out_val)  # 3.
+#                        out_val *= rbf.factor_  # 4.
+#
+#                        x_data_rbf_ptr[col] = out_val
 
-                        x_data_rbf_ptr[col] = out_val
-
-#                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 
 #                    # setup for gemv
 #                    for col in range(rbf.n_components):
