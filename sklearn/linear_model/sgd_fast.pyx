@@ -1,9 +1,10 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
-# cython: profile=True
-# cython: linetrace=True
-# cython: binding=True
+#
+# ##c#ython: profile=True
+# ##c#ython: linetrace=True
+# ##c#ython: binding=True
 #
 # Author: Peter Prettenhofer <peter.prettenhofer@gmail.com>
 #         Mathieu Blondel (partial_fit support)
