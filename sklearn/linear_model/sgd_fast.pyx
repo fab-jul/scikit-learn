@@ -840,7 +840,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                         &bl_beta,
                         x_data_rbf_ptr, &bl_incY)
 
-                    np.cos(_x_data_rbf, _x_ind_rbf)
+                    np.cos(_x_data_rbf, _x_data_rbf)
 
                     with gil:
                         print 'survive'
