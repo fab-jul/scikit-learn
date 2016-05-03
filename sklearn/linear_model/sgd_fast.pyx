@@ -506,11 +506,11 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     import line_profiler
     import sys
 
-    profile = line_profiler.LineProfiler(_plain_sgd)
+    #profile = line_profiler.LineProfiler(_plain_sgd)
 
-#        _, _ = _plain_sgd(weights,
+#        _, _ = profile.runcall(_plain_sgd, weights,
     standard_weights, standard_intercept,\
-        _, _ = profile.runcall(_plain_sgd, weights,
+        _, _ = _plain_sgd(weights,
                           intercept,
                           None,
                           0,
@@ -528,8 +528,8 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           intercept_decay,
                           average=0,
                           rbf=rbf)
-    profile.print_stats()
-    sys.exit(1)
+#    profile.print_stats()
+#    sys.exit(1)
     return standard_weights, standard_intercept
 
 
@@ -665,9 +665,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 'average_weights vector not scaled appropriately for RBF'
 
     # BLAS
-    cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
-    cdef double bl_alpha, bl_beta
-#    cdef double* rbf_random_weights_ptr = &rbf.random_weights_[0, 0]
+#    cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
+#    cdef double bl_alpha, bl_beta
+##    cdef double* rbf_random_weights_ptr = &rbf.random_weights_[0, 0]
 
 #    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_
 #    cdef double* rbf_random_weights_ptr_
@@ -697,16 +697,16 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
     cdef np.ndarray[int, ndim=1, mode='c'] _x_ind_rbf
 
-### HAND INLINED ####
-    # current column in random_weights_
-    cdef int col
-
-    # current component when doing multiplication, see below
-    cdef int idx
-
-    # holds value for x_i * random_weights_[:, col] before it gets written
-    cdef double out_val
-### / HAND INLINED ####
+#### HAND INLINED ####
+#    # current column in random_weights_
+#    cdef int col
+#
+#    # current component when doing multiplication, see below
+#    cdef int idx
+#
+#    # holds value for x_i * random_weights_[:, col] before it gets written
+#    cdef double out_val
+#### / HAND INLINED ####
 
     # helper variables
     cdef bint infinity = False
@@ -765,25 +765,25 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_ind_rbf_ptr = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
-    # BLAS
-    bl_m = n_samples
-    bl_n = rbf.n_components
-    bl_lda = bl_m
-    bl_incX = 1
-    bl_incY = 1
-    bl_alpha = 1.0
-    bl_beta = 1.0
+#    # BLAS
+#    bl_m = n_samples
+#    bl_n = rbf.n_components
+#    bl_lda = bl_m
+#    bl_incX = 1
+#    bl_incY = 1
+#    bl_alpha = 1.0
+#    bl_beta = 1.0
 
-    print '%d %d %d %d %d %f %f' % (
-            bl_m, bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
+#    print '%d %d %d %d %d %f %f' % (
+#            bl_m, bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
+#
+#    cdef object random_state = np.random.RandomState()
+#    cdef double[::1,:] a
+#    a = np.asarray(np.sqrt(2 * 0.7) *
+#        random_state.normal(size=(n_samples, rbf.n_components)),
+#        dtype=np.double, order='F')
 
-    cdef object random_state = np.random.RandomState()
-    cdef double[::1,:] a
-    a = np.asarray(np.sqrt(2 * 0.7) *
-        random_state.normal(size=(n_samples, rbf.n_components)),
-        dtype=np.double, order='F')
-
-    cdef double* rbf_random_weights_ptr = &a[0, 0]
+#    cdef double* rbf_random_weights_ptr = &a[0, 0]
 
     with nogil:
         for epoch in range(n_iter):
@@ -818,21 +818,21 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 #
 #                        x_data_rbf_ptr[col] = out_val
 
-                    # setup for gemv
-                    for col in range(rbf.n_components):
-                        x_data_rbf_ptr[col] = rbf.random_offset_[col]
-
-                    dgemv('T',  # Transpose please
-                        &bl_m, &bl_n, &bl_alpha,
-                        rbf_random_weights_ptr, &bl_lda,
-#                        rbf.random_weights_ptr_, &bl_lda,
-                        x_data_ptr, &bl_incX,
-                        &bl_beta,
-                        x_data_rbf_ptr, &bl_incY)
-
-                    for col in range(rbf.n_components):
-                        x_data_rbf_ptr[col] = (rbf.factor_ *
-                                cos(x_data_rbf_ptr[col]))
+#                    # setup for gemv
+#                    for col in range(rbf.n_components):
+#                        x_data_rbf_ptr[col] = rbf.random_offset_[col]
+#
+#                    dgemv('T',  # Transpose please
+#                        &bl_m, &bl_n, &bl_alpha,
+#                        rbf_random_weights_ptr, &bl_lda,
+##                        rbf.random_weights_ptr_, &bl_lda,
+#                        x_data_ptr, &bl_incX,
+#                        &bl_beta,
+#                        x_data_rbf_ptr, &bl_incY)
+#
+#                    for col in range(rbf.n_components):
+#                        x_data_rbf_ptr[col] = (rbf.factor_ *
+#                                cos(x_data_rbf_ptr[col]))
 
 
 #### END   hand inlined ####
@@ -1037,12 +1037,19 @@ cdef class RBFSamplerInPlace:
         bl_alpha = 1.0
         bl_beta = 1.0
 
+        # setup for gemv
+        for col in range(rbf.n_components):
+            x_data_rbf_ptr[col] = self.random_offset_[col]
+
         dgemv('T',  # Transpose please
             &bl_m, &bl_n, &bl_alpha,
             self.random_weights_ptr_, &bl_lda,
             x_data_ptr, &bl_incX,
             &bl_beta,
             x_data_rbf_ptr, &bl_incY)
+
+        for col in range(rbf.n_components):
+            x_data_rbf_ptr[col] = self.factor_ * cos(x_data_rbf_ptr[col])
 
 #        # current column in random_weights_
 #        cdef int col
