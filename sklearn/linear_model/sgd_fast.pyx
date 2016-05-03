@@ -782,7 +782,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     a = np.asarray(np.sqrt(2 * 0.7) *
         random_state.normal(size=(n_samples, rbf.n_components)),
         dtype=np.double, order='F')
-    print a
+
     cdef double* rbf_random_weights_ptr = &a[0, 0]
 
     with nogil:
@@ -824,7 +824,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
                     dgemv('T',  # Transpose please
                         &bl_m, &bl_n, &bl_alpha,
-                        rbf_random_weights_ptr, &bl_lda,
+#                        rbf_random_weights_ptr, &bl_lda,
+                        rbf.random_weights_ptr_, &bl_lda,
                         x_data_ptr, &bl_incX,
                         &bl_beta,
                         x_data_rbf_ptr, &bl_incY)
@@ -985,6 +986,7 @@ cdef class RBFSamplerInPlace:
     cdef public float gamma
     cdef public int n_components
     cdef double[::1, :] random_weights_  # FORTRAN style
+    cdef double* random_weights_ptr_
     cdef double[:] random_offset_
     cdef public double factor_
 
@@ -1005,6 +1007,7 @@ cdef class RBFSamplerInPlace:
         self.random_weights_ = np.asarray(np.sqrt(2 * self.gamma) *
             random_state.normal(size=(n_features, self.n_components)),
             dtype=np.double, order='F')
+        self.random_weights_ptr_ = &self.random_weights_[0, 0]
 
         self.random_offset_ = random_state.uniform(0, 2 * np.pi,
                                                    size=self.n_components)
