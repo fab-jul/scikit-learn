@@ -793,7 +793,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     print("-- Epoch %d" % (epoch + 1))
             if shuffle:
                 dataset.shuffle(seed)
-            for i in range(min(n_samples, 11)):
+            for i in range(min(n_samples, 101):
                 if i % 10 == 0:
                     with gil:
                         print('%i: %f' % (i, time() - t_per_hundred))
