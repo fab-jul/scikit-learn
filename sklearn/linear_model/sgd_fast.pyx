@@ -777,6 +777,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     print '%d %d %d %d %d %f %f' % (
             bl_m, bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
 
+    cdef object random_state = np.random.RandomState()
     cdef double[::1,:] a
     a = np.asarray(np.sqrt(2 * 0.7) *
         random_state.normal(size=(n_samples, rbf.n_components)),
