@@ -667,7 +667,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     # BLAS
     cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
     cdef double bl_alpha, bl_beta
-    cdef double* rbf_random_weights_ptr = &rbf.random_weights_[0, 0]
+#    cdef double* rbf_random_weights_ptr = &rbf.random_weights_[0, 0]
 
 #    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_
 #    cdef double* rbf_random_weights_ptr_
@@ -776,6 +776,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
 
     print '%d %d %d %d %d %f %f' % (
             bl_m, bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
+
+    cdef double[::1,:] a
+    a = np.asarray(np.sqrt(2 * gamma) *
+        random_state.normal(size=(n_samples, rbf.n_components)),
+        dtype=np.double, order='F')
+    print a
+    cdef double* rbf_random_weights_ptr = &a[0, 0]
 
     with nogil:
         for epoch in range(n_iter):
