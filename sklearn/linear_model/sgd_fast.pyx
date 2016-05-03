@@ -772,7 +772,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     bl_incX = 1
     bl_incY = 1
     bl_alpha = 1.0
-    bl_beta = 0.0
+    bl_beta = 1.0
 
     print '%d %d %d %d %d %f %f' % (
             bl_m, bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
@@ -829,6 +829,9 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     with gil:
                         print 'hi'
                     
+                    # setup for gemv
+                    for col in range(rbf.n_components):
+                        x_data_rbf_ptr[col] = rbf.random_offset_[col]
 
                     dgemv('T',  # Transpose please
                         &bl_m, &bl_n, &bl_alpha,
@@ -836,6 +839,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                         x_data_ptr, &bl_incX,
                         &bl_beta,
                         x_data_rbf_ptr, &bl_incY)
+
+                    np.cos(_x_data_rbf, _x_ind_rbf)
 
                     with gil:
                         print 'survive'
