@@ -804,7 +804,7 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 # update RBF variables
                 if rbf is not None:
 #### BEGIN hand inlined ####
-#                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
+                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 
 #                    for col in range(rbf.n_components):
 #                        out_val = 0
@@ -822,13 +822,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     for col in range(rbf.n_components):
                         x_data_rbf_ptr[col] = rbf.random_offset_[col]
 
-                    dgemv('T',  # Transpose please
-                        &bl_m, &bl_n, &bl_alpha,
+#                    dgemv('T',  # Transpose please
+#                        &bl_m, &bl_n, &bl_alpha,
 #                        rbf_random_weights_ptr, &bl_lda,
-                        rbf.random_weights_ptr_, &bl_lda,
-                        x_data_ptr, &bl_incX,
-                        &bl_beta,
-                        x_data_rbf_ptr, &bl_incY)
+##                        rbf.random_weights_ptr_, &bl_lda,
+#                        x_data_ptr, &bl_incX,
+#                        &bl_beta,
+#                        x_data_rbf_ptr, &bl_incY)
 
                     for col in range(rbf.n_components):
                         x_data_rbf_ptr[col] = (rbf.factor_ *
@@ -1025,26 +1025,45 @@ cdef class RBFSamplerInPlace:
         3. np.cos(projection, projection)  # second argument is output
         4. projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         """
-        # current column in random_weights_
-        cdef int col
 
-        # current component when doing multiplication, see below
-        cdef int idx
+        cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
+        cdef double bl_alpha, bl_beta
 
-        # holds value for x_i * random_weights_[:, col] before it gets written
-        cdef double out_val
+        bl_m = xnnz
+        bl_n = self.n_components
+        bl_lda = bl_m
+        bl_incX = 1
+        bl_incY = 1
+        bl_alpha = 1.0
+        bl_beta = 1.0
 
-        # iterate over columns of random_weights_
-        for col in range(self.n_components):
-            out_val = 0
-            for i in range(xnnz):  # 1.
-                idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
-                out_val += x_data_ptr[i] * self.random_weights_[idx, col]
-            out_val += self.random_offset_[col]  # 2.
-            out_val = cos(out_val)  # 3.
-            out_val *= self.factor_  # 4.
+        dgemv('T',  # Transpose please
+            &bl_m, &bl_n, &bl_alpha,
+            self.random_weights_ptr, &bl_lda,
+            x_data_ptr, &bl_incX,
+            &bl_beta,
+            x_data_rbf_ptr, &bl_incY)
 
-            x_data_rbf_ptr[col] = out_val
+#        # current column in random_weights_
+#        cdef int col
+#
+#        # current component when doing multiplication, see below
+#        cdef int idx
+#
+#        # holds value for x_i * random_weights_[:, col] before it gets written
+#        cdef double out_val
+#
+#        # iterate over columns of random_weights_
+#        for col in range(self.n_components):
+#            out_val = 0
+#            for i in range(xnnz):  # 1.
+#                idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
+#                out_val += x_data_ptr[i] * self.random_weights_[idx, col]
+#            out_val += self.random_offset_[col]  # 2.
+#            out_val = cos(out_val)  # 3.
+#            out_val *= self.factor_  # 4.
+#
+#            x_data_rbf_ptr[col] = out_val
 
     def transform_and_multiply_mat(self, dataset, coef, Y):
         n_samples = dataset.n_samples
