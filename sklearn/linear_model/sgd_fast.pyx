@@ -86,13 +86,13 @@ def test():
     cdef int m, n, lda, incX, incY
     cdef double alpha, beta
 
-    cdef int n_features = 1000
+    cdef int n_samples = 1000
     cdef int n_components = 2000
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
     a = np.asarray(np.sqrt(2 * gamma) *
-        random_state.normal(size=(n_features, n_components)),
+        random_state.normal(size=(n_samples, n_components)),
         dtype=np.double, order='F')
 #    a =  np.asarray(np.array([[1, 2, 3], [4, 5, 6]], np.double, order="c"),
 #            dtype=np.double, order='F')
