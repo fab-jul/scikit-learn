@@ -792,8 +792,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     print("-- Epoch %d" % (epoch + 1))
             if shuffle:
                 dataset.shuffle(seed)
-            for i in range(min(n_samples, 10)):
-                if i % 100 == 0:
+            for i in range(min(n_samples, 11)):
+                if i > 0 and (i % 10 == 0):
                     with gil:
                         print('%i: %f' % (i, time() - t_per_hundred))
                         t_per_hundred = time()
@@ -801,34 +801,23 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
-                with gil:
-                    print 'xnnz %d' % xnnz
-
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("did load ")
-#                ###
-
                 # update RBF variables
                 if rbf is not None:
 #### BEGIN hand inlined ####
 #                    rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 
-                    for col in range(rbf.n_components):
-                        out_val = 0
-                        for i in range(xnnz):  # 1.
-                            idx = x_ind_ptr[i]
-                            out_val += (x_data_ptr[i] *
-                                    rbf.random_weights_[idx, col])
-                        out_val += rbf.random_offset_[col]  # 2.
-                        out_val = cos(out_val)  # 3.
+#                    for col in range(rbf.n_components):
+#                        out_val = 0
+#                        for i in range(xnnz):  # 1.
+#                            idx = x_ind_ptr[i]
+#                            out_val += (x_data_ptr[i] *
+#                                    rbf.random_weights_[idx, col])
+#                        out_val += rbf.random_offset_[col]  # 2.
+#                        out_val = cos(out_val)  # 3.
 #                        out_val *= rbf.factor_  # 4.
+#
+#                        x_data_rbf_ptr[col] = out_val
 
-                        x_data_rbf_ptr[col] = out_val
-                    with gil:
-                        print 'hi'
-                    
                     # setup for gemv
                     for col in range(rbf.n_components):
                         x_data_rbf_ptr[col] = rbf.random_offset_[col]
@@ -841,10 +830,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                         x_data_rbf_ptr, &bl_incY)
 
                     for col in range(rbf.n_components):
-                        x_data_rbf_ptr[col] = cos(x_data_rbf_ptr[col])
-
-                    with gil:
-                        print 'survive'
+                        x_data_rbf_ptr[col] = (rbf.factor_ *
+                                cos(x_data_rbf_ptr[col]))
 
 
 #### END   hand inlined ####
@@ -852,12 +839,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     x_data_rbf_ptr = x_data_ptr
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
-
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("did transform ")
-#                ###
 
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
 
@@ -872,12 +853,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 elif learning_rate == INVSCALING:
                     eta = eta0 / pow(t, power_t)
 
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("1 ")
-#                ###
-
                 if verbose > 0:
                     sumloss += loss.loss(p, y)
 
@@ -885,12 +860,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     class_weight = weight_pos
                 else:
                     class_weight = weight_neg
-
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("2 ")
-#                ###
 
                 if learning_rate == PA1:
                     update = sqnorm(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf)
@@ -910,12 +879,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                         dloss = MAX_DLOSS
                     update = -eta * dloss
 
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("3 ")
-#                ###
-
                 if learning_rate >= PA1:
                     if is_hinge:
                         # classification
@@ -923,12 +886,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     elif y - p < 0:
                         # regression
                         update *= -1
-
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("4 ")
-#                ###
 
                 update *= class_weight * sample_weight
 
@@ -942,12 +899,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     if fit_intercept == 1:
                         intercept += update * intercept_decay
 
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("5 ")
-#                ###
-
                 if 0 < average <= t:
                     # compute the average for the intercept and update the
                     # average weights, this is done regardless as to whether
@@ -958,22 +909,10 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     average_intercept += ((intercept - average_intercept) /
                                           (t - average + 1))
 
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("6 ")
-#                ###
-
                 if penalty_type == L1 or penalty_type == ELASTICNET:
                     # FJ unmodified
                     u += (l1_ratio * eta * alpha)
                     l1penalty(w, q_data_ptr, x_ind_ptr, xnnz, u)
-
-#                ###
-#                if verbose > 0:
-#                    with gil:
-#                        print("7 ")
-#                ###
 
                 t += 1
                 count += 1
