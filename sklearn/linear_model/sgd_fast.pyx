@@ -1039,7 +1039,7 @@ cdef class RBFSamplerInPlace:
 
         dgemv('T',  # Transpose please
             &bl_m, &bl_n, &bl_alpha,
-            self.random_weights_ptr, &bl_lda,
+            self.random_weights_ptr_, &bl_lda,
             x_data_ptr, &bl_incX,
             &bl_beta,
             x_data_rbf_ptr, &bl_incY)
