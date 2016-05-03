@@ -55,7 +55,7 @@ ctypedef void dgemv_t(
 	double *a, int *lda,
         double *x, int *incX,
 	double *beta,
-	double *y, int *incY)
+	double *y, int *incY) nogil
 
 # Since Scipy >= 0.12.0
 cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
@@ -109,13 +109,13 @@ def test():
     lda = m
     incX = 1
     incY = 1
-#    with nogil:
-#        dgemv('T',  # Transpose please
-#                &m, &n, &alpha,
-#                &a[0, 0], &lda,
-#                x_ptr, &incX,
-#                &beta,
-#                y_ptr, &incY)
+    with nogil:
+        dgemv('T',  # Transpose please
+                &m, &n, &alpha,
+                &a[0, 0], &lda,
+                x_ptr, &incX,
+                &beta,
+                y_ptr, &incY)
     print(np.asarray(y))
     print(np.dot(x, a))
 
@@ -822,13 +822,12 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                         print 'hi'
                     
 
-                    with gil:
-                        dgemv('T',  # Transpose please
-                            &bl_m, &bl_n, &bl_alpha,
-                            rbf_random_weights_ptr, &bl_lda,
-                            x_data_ptr, &bl_incX,
-                            &bl_beta,
-                            x_data_rbf_ptr, &bl_incY)
+                    dgemv('T',  # Transpose please
+                        &bl_m, &bl_n, &bl_alpha,
+                        rbf_random_weights_ptr, &bl_lda,
+                        x_data_ptr, &bl_incX,
+                        &bl_beta,
+                        x_data_rbf_ptr, &bl_incY)
 
                     with gil:
                         print 'survive'
