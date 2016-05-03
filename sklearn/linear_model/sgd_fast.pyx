@@ -840,7 +840,8 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                         &bl_beta,
                         x_data_rbf_ptr, &bl_incY)
 
-                    np.cos(_x_data_rbf, _x_data_rbf)
+                    for col in range(rbf.n_components):
+                        x_data_rbf_ptr[col] = cos(x_data_rbf_ptr[col])
 
                     with gil:
                         print 'survive'
