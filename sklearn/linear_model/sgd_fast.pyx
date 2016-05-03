@@ -86,18 +86,27 @@ def test():
     cdef int m, n, lda, incX, incY
     cdef double alpha, beta
 
-    a =  np.asarray(np.array([[1, 2, 3], [4, 5, 6]], np.double, order="c"),
-            dtype=np.double, order='F')
-    x = np.array([9, 10], np.double, order="c")
+    cdef int n_features = 1000
+    cdef int n_components = 2000
+    cdef double gamma = 0.7
+    cdef object random_state = np.random.RandomState()
+
+    a = np.asarray(np.sqrt(2 * gamma) *
+        random_state.normal(size=(n_features, n_components)),
+        dtype=np.double, order='F')
+#    a =  np.asarray(np.array([[1, 2, 3], [4, 5, 6]], np.double, order="c"),
+#            dtype=np.double, order='F')
+    x = random_state.uniform(0, 2 * np.pi, size=n_samples)
+#    x = np.array([9, 10], np.double, order="c")
     x_ptr = <double*>x.data
-    y = np.array([0, 0, 0], np.double, order="F")
+    y = np.zeros(n_components, np.double, order="F")
     y_ptr = <double*>y.data
 
     alpha = 1.0
     beta = 0.0
-    m = 2
-    n = 3
-    lda = 2
+    m = n_samples
+    n = n_components
+    lda = m
     incX = 1
     incY = 1
 #    with nogil:
