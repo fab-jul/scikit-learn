@@ -698,16 +698,16 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
     cdef np.ndarray[int, ndim=1, mode='c'] _x_ind_rbf
 
-#### HAND INLINED ####
-#    # current column in random_weights_
-#    cdef int col
-#
-#    # current component when doing multiplication, see below
-#    cdef int idx
-#
-#    # holds value for x_i * random_weights_[:, col] before it gets written
-#    cdef double out_val
-#### / HAND INLINED ####
+### HAND INLINED ####
+    # current column in random_weights_
+    cdef int col
+
+    # current component when doing multiplication, see below
+    cdef int idx
+
+    # holds value for x_i * random_weights_[:, col] before it gets written
+    cdef double out_val
+### / HAND INLINED ####
 
     # helper variables
     cdef bint infinity = False
