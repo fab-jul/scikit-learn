@@ -822,13 +822,13 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     for col in range(rbf.n_components):
                         x_data_rbf_ptr[col] = rbf.random_offset_[col]
 
-#                    dgemv('T',  # Transpose please
-#                        &bl_m, &bl_n, &bl_alpha,
-#                        rbf_random_weights_ptr, &bl_lda,
-##                        rbf.random_weights_ptr_, &bl_lda,
-#                        x_data_ptr, &bl_incX,
-#                        &bl_beta,
-#                        x_data_rbf_ptr, &bl_incY)
+                    dgemv('T',  # Transpose please
+                        &bl_m, &bl_n, &bl_alpha,
+                        rbf_random_weights_ptr, &bl_lda,
+#                        rbf.random_weights_ptr_, &bl_lda,
+                        x_data_ptr, &bl_incX,
+                        &bl_beta,
+                        x_data_rbf_ptr, &bl_incY)
 
                     for col in range(rbf.n_components):
                         x_data_rbf_ptr[col] = (rbf.factor_ *
