@@ -121,9 +121,9 @@ cdef matvec(int n_samples, int n_features, int n_components):
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
-    cdef np.array x_data = np.random.rand(n_samples, n_features)
+    cdef np.ndarray x_data = np.random.rand(n_samples, n_features)
     cdef double[:, :] x = x_data
-    cdef np.array rw_data = np.asarray(np.sqrt(2 * gamma) *
+    cdef np.ndarray rw_data = np.asarray(np.sqrt(2 * gamma) *
         random_state.normal(size=(n_features, n_components)),
         dtype=np.double, order='F')
     cdef double[::1, :] rw = rw_data
