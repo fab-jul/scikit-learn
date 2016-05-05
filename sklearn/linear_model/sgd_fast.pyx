@@ -88,16 +88,35 @@ cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 #                      double *Y, int incY) nogil
 
 
-def matvsvec(n_samples):
+def sweep():
+    print 'n_samples'
+    for n_samples in map(lambda x: x*1000, range(5)):
+        print n_samples
+        matvsvec(n_samples=n_samples)
+
+    print 'n_features'
+    for n_features in map(lambda x: x*500, range(5)):
+        print n_features
+        matvsvec(n_features=n_features)
+
+    print 'n_components'
+    for n_components in map(lambda x: x*500, range(5)):
+        print n_components
+        matvsvec(n_components=n_components)
+
+
+def make_matlab(s):
+    pass
+
+
+def matvsvec(n_samples = 5000, n_features=1000, n_components=2000):
     matvec(n_samples)
     matmat(n_samples)
 
 
-cdef matvec(int n_samples):
+cdef matvec(int n_samples, int n_features, int n_components):
     cdef int n_tests = 10
 
-    cdef int n_features = 1000
-    cdef int n_components = 2000
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
@@ -137,11 +156,9 @@ cdef matvec(int n_samples):
 
     print('%f' % (time() - start_time))
 
-cdef matmat(int n_samples):
+cdef matmat(int n_samples, int n_features, int n_components):
     cdef int n_tests = 10
 
-    cdef int n_features = 1000
-    cdef int n_components = 2000
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
