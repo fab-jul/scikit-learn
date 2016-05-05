@@ -90,7 +90,7 @@ cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 
 def sweep():
     def make_range(step):
-        return map(lambda x: (x+1)*step, range(5)):
+        return map(lambda x: (x+1)*step, range(5))
 
     print 'n_samples'
     for n_samples in make_range(1000):
