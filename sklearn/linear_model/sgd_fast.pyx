@@ -78,6 +78,53 @@ cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
 #                      double *Y, int incY) nogil
 
 
+def matvsvec():
+    pass
+
+
+cdef matvec():
+    cdef int n_tests = 100
+
+    cdef int n_samples = 5000
+    cdef int n_features = 1000
+    cdef int n_components = 2000
+    cdef double gamma = 0.7
+    cdef object random_state = np.random.RandomState()
+
+    cdef double[:, :] x = np.random.rand(n_samples, n_features)
+    cdef double[::1, :] rw = np.asarray(np.sqrt(2 * gamma) *
+        random_state.normal(size=(n_features, n_components)),
+        dtype=np.double, order='F')
+    cdef double* x_row_ptr
+
+    cdef np.ndarray[double, ndim=1, mode='fortran'] y =\
+        np.zeros(n_components, np.double, order="F")
+    cdef double* y_ptr = <double*>y.data
+
+    ## Vector x Matrix
+    cdef int m, n, lda, incX, incY
+    cdef double alpha, beta
+
+    m = n_features; n = n_components; lda = m; incX = 1; incY = 1;
+    alpha = 1; beta = 0;
+
+    start_time = time()
+
+    with nogil:
+        for _ in n_tests:
+            for row in n_samples:
+                x_row_ptr = &x[0,0] + row * n_features
+
+                dgemv('T',  # Transpose please
+                    &m, &n, &alpha,
+                    &rw[0, 0], &lda,
+                    x_row_ptr, &incX,
+                    &beta,
+                    y_ptr, &bl_incY)
+
+    print('%f' % time() - start_time)
+
+
 def test():
     cdef double[::1,:] a
     cdef np.ndarray[double, ndim=1, mode='c'] x
