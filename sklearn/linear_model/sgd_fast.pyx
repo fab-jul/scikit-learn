@@ -170,15 +170,14 @@ cdef matmat():
     with nogil:
         for _ in range(n_tests):
             dgemm('N',  # Normal
-                dgemv('T',  # Transpose please
-                    &m, &n, &k,
-                    &alpha,
-                    &x[0,0], &lda,
-                    &rw[0,0], &ldb,
-                    &beta,
-                    &y[0,0], &ldc)
+                &m, &n, &k,
+                &alpha,
+                &x[0,0], &lda,
+                &rw[0,0], &ldb,
+                &beta,
+                &y[0,0], &ldc)
 
-    print('%f' % time() - start_time)
+    print('%f' % (time() - start_time))
 
 
 def test():
