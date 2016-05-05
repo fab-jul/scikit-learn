@@ -111,7 +111,7 @@ def sweep():
 
 
 def matvsvec(n_samples = 5000, n_features=1000, n_components=2000):
-    matvec(n_samples, n_features, n_components)
+ #   matvec(n_samples, n_features, n_components)
     matmat(n_samples, n_features, n_components)
 
 
@@ -206,7 +206,7 @@ cdef matmat(int n_samples, int n_features, int n_components):
 
 
     print y
-    print x_data * rw_data
+    print safe_sparse_dot(x_data, rw_data)
 
     print('%f' % (time() - start_time))
 
