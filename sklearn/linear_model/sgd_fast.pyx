@@ -113,6 +113,7 @@ cdef matvec():
 
     with nogil:
         for _ in range(n_tests):
+            x_row_ptr = &x[0,0]
             for row in range(n_samples):
                 dgemv('T',  # Transpose please
                     &m, &n, &alpha,
@@ -120,8 +121,6 @@ cdef matvec():
                     x_row_ptr, &incX,
                     &beta,
                     y_ptr, &incY)
-                with gil:
-                    print 'hi'
 
                 x_row_ptr += n_features
 
