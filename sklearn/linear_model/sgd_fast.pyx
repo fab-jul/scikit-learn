@@ -170,16 +170,18 @@ cdef matmat(int n_samples, int n_features, int n_components):
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
-    cdef np.ndarray x_data = np.asarray(np.random.rand(n_samples, n_features),
+    cdef np.ndarray x_data[double, ndim=2, mode='fortran'] =\
+            np.asarray(np.random.rand(n_samples, n_features),
             dtype=np.double, order='F')
     cdef double[::1, :] x = x_data
-    cdef np.ndarray rw_data = np.asarray(np.sqrt(2 * gamma) *
+    cdef np.ndarray rw_data[double, ndim=2, mode='fortran'] =\
+            np.asarray(np.sqrt(2 * gamma) *
             random_state.normal(size=(n_features, n_components)),
             dtype=np.double, order='F')
     cdef double[::1, :] rw = rw_data
 
-    cdef np.ndarray y_data =\
-        np.zeros((n_samples, n_components), dtype=np.double, order="F")
+    cdef np.ndarray y_data[double, ndim=2, mode='fortran']  =\
+        np.zeros((n_samples, n_components), dtype=np.double, order="c")
     cdef double[::1, :] y = y_data
 
     # A: X; B: rw; C: y
@@ -207,12 +209,13 @@ cdef matmat(int n_samples, int n_features, int n_components):
                 &y[0,0], &ldc)
 
     print('%f' % (time() - start_time))
+    print y_data
+    print x_data * rw_data
 
     start_time = time()
     for _ in range(n_tests):
         y = safe_sparse_dot(x_data, rw_data)
     print('%f' % (time() - start_time))
-
 
 
 def test():
