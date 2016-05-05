@@ -121,12 +121,10 @@ cdef matvec(int n_samples, int n_features, int n_components):
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
-    cdef np.ndarray x_data = np.random.rand(n_samples, n_features)
-    cdef double[:, :] x = x_data
-    cdef np.ndarray rw_data = np.asarray(np.sqrt(2 * gamma) *
+    cdef double[:, :] x = np.random.rand(n_samples, n_features)
+    cdef double[::1, :] rw = np.asarray(np.sqrt(2 * gamma) *
         random_state.normal(size=(n_features, n_components)),
         dtype=np.double, order='F')
-    cdef double[::1, :] rw = rw_data
     cdef double* x_row_ptr = &x[0,0]
 
     cdef np.ndarray[double, ndim=1, mode='fortran'] y =\
@@ -160,7 +158,7 @@ cdef matvec(int n_samples, int n_features, int n_components):
 #                    tmp += y_ptr[i]
 #                with gil:
 #                    print tmp
-
+#
                 x_row_ptr += n_features
 
     print('%f' % (time() - start_time))
@@ -171,11 +169,14 @@ cdef matmat(int n_samples, int n_features, int n_components):
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
-    cdef double[::1, :] x = np.asarray(np.random.rand(n_samples, n_features),
+    cdef np.ndarray x_data = np.asarray(np.random.rand(n_samples, n_features),
             dtype=np.double, order='F')
-    cdef double[::1, :] rw = np.asarray(np.sqrt(2 * gamma) *
+    cdef double[::1, :] x = x_data
+    cdef np.ndarray rw_data = np.asarray(np.sqrt(2 * gamma) *
             random_state.normal(size=(n_features, n_components)),
             dtype=np.double, order='F')
+    cdef double[::1, :] rw = rw_data
+
     cdef double[::1, :] y =\
         np.zeros((n_samples, n_components), dtype=np.double, order="F")
 
