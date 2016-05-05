@@ -1,9 +1,6 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
-# cython: profile=True
-# cython: linetrace=True
-# cython: binding=True
 #
 # ##c#ython: profile=True
 # ##c#ython: linetrace=True
@@ -91,22 +88,14 @@ cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 #                      double *Y, int incY) nogil
 
 
-def matvsvec():
-    import line_profiler
-
-    profile_matvec = line_profiler.LineProfiler(matvec)
-    profile_matvec.runcall(matvec)
-    profile_matvec.print_stats()
-
-    profile_matmat = line_profiler.LineProfiler(matmat)
-    profile_matmat.runcall(matmat)
-    profile_matmat.print_stats()
+def matvsvec(n_samples):
+    matvec(n_samples)
+    matmat(n_samples)
 
 
-cdef matvec():
+cdef matvec(int n_samples):
     cdef int n_tests = 10
 
-    cdef int n_samples = 5000
     cdef int n_features = 1000
     cdef int n_components = 2000
     cdef double gamma = 0.7
@@ -148,10 +137,9 @@ cdef matvec():
 
     print('%f' % (time() - start_time))
 
-cdef matmat():
+cdef matmat(int n_samples):
     cdef int n_tests = 10
 
-    cdef int n_samples = 5000
     cdef int n_features = 1000
     cdef int n_components = 2000
     cdef double gamma = 0.7
