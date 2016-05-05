@@ -205,7 +205,7 @@ cdef matmat(int n_samples, int n_features, int n_components):
 
 
     print y
-    print x * rw
+    print x_data * rw_data
 
     print('%f' % (time() - start_time))
 
