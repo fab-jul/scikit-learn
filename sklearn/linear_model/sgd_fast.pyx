@@ -89,18 +89,21 @@ cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 
 
 def sweep():
+    def make_range(step):
+        return map(lambda x: (x+1)*step, range(5)):
+
     print 'n_samples'
-    for n_samples in map(lambda x: x*1000, range(5)):
+    for n_samples in make_range(1000):
         print n_samples
         matvsvec(n_samples=n_samples)
 
     print 'n_features'
-    for n_features in map(lambda x: x*500, range(5)):
+    for n_features in make_range(500):
         print n_features
         matvsvec(n_features=n_features)
 
     print 'n_components'
-    for n_components in map(lambda x: x*500, range(5)):
+    for n_components in make_range(500):
         print n_components
         matvsvec(n_components=n_components)
 
