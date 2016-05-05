@@ -101,9 +101,10 @@ cdef matvec():
         np.zeros(n_components, np.double, order="F")
     cdef double* y_ptr = <double*>y.data
 
-    ## Vector x Matrix
     cdef int m, n, lda, incX, incY
     cdef double alpha, beta
+
+    cdef int t, row
 
     m = n_features; n = n_components; lda = m; incX = 1; incY = 1;
     alpha = 1; beta = 0;
@@ -111,7 +112,7 @@ cdef matvec():
     start_time = time()
 
     with nogil:
-        for _ in n_tests:
+        for t in n_tests:
             for row in n_samples:
                 dgemv('T',  # Transpose please
                     &m, &n, &alpha,
