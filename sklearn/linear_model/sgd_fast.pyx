@@ -58,8 +58,18 @@ ctypedef void dgemv_t(
 	double *beta,
 	double *y, int *incY) nogil
 
+ctypedef void dgemm_t(
+	char *transa, char *transb,
+	int *m, int *n, int *k,
+	double *alpha,
+	double *a, int *lda,
+	double *b, int *ldb,
+	double *beta,
+	double *c, int *ldc) nogil
+
 # Since Scipy >= 0.12.0
 cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
+cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 
 #cdef extern from "cblas.h":
 #    enum CBLAS_ORDER:
@@ -80,6 +90,7 @@ cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
 
 def matvsvec():
     matvec()
+    matmat()
 
 
 cdef matvec():
@@ -124,6 +135,48 @@ cdef matvec():
                     y_ptr, &incY)
 
                 x_row_ptr += n_features
+
+    print('%f' % (time() - start_time))
+
+cdef matmat():
+    cdef int n_tests = 10
+
+    cdef int n_samples = 5000
+    cdef int n_features = 1000
+    cdef int n_components = 2000
+    cdef double gamma = 0.7
+    cdef object random_state = np.random.RandomState()
+
+    cdef double[::1, :] x = np.asarray(np.random.rand(n_samples, n_features),
+            dtype=np.double, order='F')
+    cdef double[::1, :] rw = np.asarray(np.sqrt(2 * gamma) *
+            random_state.normal(size=(n_features, n_components)),
+            dtype=np.double, order='F')
+    cdef double[::1, :] y =\
+        np.zeros((n_samples, n_components), dtype=np.double, order="F")
+
+    # A: X; B: rw; C: y
+    cdef int m, k, n, lda, ldb, ldc
+    m = n_samples; k = n_features; n = n_components
+    lda = m; ldb = k; ldc = m
+
+    cdef double alpha, beta
+    alpha = 1; beta = 0;
+
+    cdef int row
+
+    start_time = time()
+
+    with nogil:
+        for _ in range(n_tests):
+            dgemm('N',  # Normal
+                dgemv('T',  # Transpose please
+                    &m, &n, &k,
+                    &alpha,
+                    &x[0,0], &lda,
+                    &rw[0,0], &ldb,
+                    &beta,
+                    &y[0,0], &ldc)
 
     print('%f' % time() - start_time)
 
