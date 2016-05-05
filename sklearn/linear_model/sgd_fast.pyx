@@ -79,7 +79,7 @@ cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
 
 
 def matvsvec():
-    pass
+    matvec()
 
 
 cdef matvec():
