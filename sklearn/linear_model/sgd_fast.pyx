@@ -118,7 +118,7 @@ cdef matvec():
                     &rw[0, 0], &lda,
                     x_row_ptr, &incX,
                     &beta,
-                    y_ptr, &bl_incY)
+                    y_ptr, &incY)
 
                 x_row_ptr += n_features
 
