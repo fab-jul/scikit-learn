@@ -169,7 +169,7 @@ cdef matmat():
 
     with nogil:
         for _ in range(n_tests):
-            dgemm('N',  # Normal
+            dgemm('N', 'N',  # Normal
                 &m, &n, &k,
                 &alpha,
                 &x[0,0], &lda,
