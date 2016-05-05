@@ -210,12 +210,12 @@ cdef matmat(int n_samples, int n_features, int n_components):
 
     print('%f' % (time() - start_time))
     print y_data
-    print x_data * rw_data
 
     start_time = time()
     for _ in range(n_tests):
         y = safe_sparse_dot(x_data, rw_data)
     print('%f' % (time() - start_time))
+    print y_data
 
 
 def test():
