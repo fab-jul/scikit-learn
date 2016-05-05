@@ -19,6 +19,7 @@ import sys
 from time import time
 
 cimport cython
+from ..utils.extmath cimport safe_sparse_dot  # FJ
 from libc.math cimport exp, log, sqrt, pow, fabs, cos
 cimport numpy as np
 cdef extern from "sgd_fast_helpers.h":
