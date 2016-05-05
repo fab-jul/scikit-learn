@@ -209,9 +209,8 @@ cdef matmat(int n_samples, int n_features, int n_components):
     print('%f' % (time() - start_time))
 
     start_time = time()
-    with nogil:
-        for _ in range(n_tests):
-            y = safe_sparse_dot(x_data, rw_data)
+    for _ in range(n_tests):
+        y = safe_sparse_dot(x_data, rw_data)
     print('%f' % (time() - start_time))
 
 
