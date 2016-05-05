@@ -206,11 +206,12 @@ cdef matmat(int n_samples, int n_features, int n_components):
                 &beta,
                 &y[0,0], &ldc)
 
-
-    print y_data
-    print safe_sparse_dot(x_data, rw_data)
-
     print('%f' % (time() - start_time))
+
+    start_time = time()
+    cdef ndarray r = safe_sparse_dot(x_data, rw_data)
+    print('%f' % (time() - start_time))
+
 
 
 def test():
