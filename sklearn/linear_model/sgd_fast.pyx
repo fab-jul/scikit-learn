@@ -170,17 +170,17 @@ cdef matmat(int n_samples, int n_features, int n_components):
     cdef double gamma = 0.7
     cdef object random_state = np.random.RandomState()
 
-    cdef np.ndarray x_data[double, ndim=2, mode='fortran'] =\
+    cdef np.ndarray[double, ndim=2, mode='fortran'] x_data =\
             np.asarray(np.random.rand(n_samples, n_features),
             dtype=np.double, order='F')
     cdef double[::1, :] x = x_data
-    cdef np.ndarray rw_data[double, ndim=2, mode='fortran'] =\
+    cdef np.ndarray[double, ndim=2, mode='fortran'] rw_data =\
             np.asarray(np.sqrt(2 * gamma) *
             random_state.normal(size=(n_features, n_components)),
             dtype=np.double, order='F')
     cdef double[::1, :] rw = rw_data
 
-    cdef np.ndarray y_data[double, ndim=2, mode='c']  =\
+    cdef np.ndarray[double, ndim=2, mode='c'] y_data  =\
         np.zeros((n_samples, n_components), dtype=np.double, order="c")
     cdef double[::1, :] y = y_data
 
