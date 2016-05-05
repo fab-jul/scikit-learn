@@ -178,8 +178,9 @@ cdef matmat(int n_samples, int n_features, int n_components):
             dtype=np.double, order='F')
     cdef double[::1, :] rw = rw_data
 
-    cdef double[::1, :] y =\
+    cdef np.ndarray y_data =\
         np.zeros((n_samples, n_components), dtype=np.double, order="F")
+    cdef double[::1, :] y = y_data
 
     # A: X; B: rw; C: y
     cdef int m, k, n, lda, ldb, ldc
