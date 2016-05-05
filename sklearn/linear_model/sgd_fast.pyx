@@ -207,7 +207,7 @@ cdef matmat(int n_samples, int n_features, int n_components):
                 &y[0,0], &ldc)
 
 
-    print y
+    print y_data
     print safe_sparse_dot(x_data, rw_data)
 
     print('%f' % (time() - start_time))
