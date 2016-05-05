@@ -1,6 +1,9 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: profile=True
+# cython: linetrace=True
+# cython: binding=True
 #
 # ##c#ython: profile=True
 # ##c#ython: linetrace=True
@@ -89,8 +92,15 @@ cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 
 
 def matvsvec():
-    matvec()
-    matmat()
+    import line_profiler
+
+    profile_matvec = line_profiler.LineProfiler(matvec)
+    profile_matvec.runcall(matvec)
+    profile_matvec.print_stats()
+
+    profile_matmat = line_profiler.LineProfiler(matmat)
+    profile_matmat.runcall(matmat)
+    profile_matmat.print_stats()
 
 
 cdef matvec():
