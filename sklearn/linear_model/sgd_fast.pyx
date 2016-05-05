@@ -110,8 +110,8 @@ def make_matlab(s):
 
 
 def matvsvec(n_samples = 5000, n_features=1000, n_components=2000):
-    matvec(n_samples)
-    matmat(n_samples)
+    matvec(n_samples, n_features, n_components)
+    matmat(n_samples, n_features, n_components)
 
 
 cdef matvec(int n_samples, int n_features, int n_components):
