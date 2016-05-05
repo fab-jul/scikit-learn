@@ -95,7 +95,7 @@ cdef matvec():
     cdef double[::1, :] rw = np.asarray(np.sqrt(2 * gamma) *
         random_state.normal(size=(n_features, n_components)),
         dtype=np.double, order='F')
-    cdef double* x_row_ptr
+    cdef double* x_row_ptr = &x[0,0]
 
     cdef np.ndarray[double, ndim=1, mode='fortran'] y =\
         np.zeros(n_components, np.double, order="F")
@@ -113,14 +113,14 @@ cdef matvec():
     with nogil:
         for _ in n_tests:
             for row in n_samples:
-                x_row_ptr = &x[0,0] + row * n_features
-
                 dgemv('T',  # Transpose please
                     &m, &n, &alpha,
                     &rw[0, 0], &lda,
                     x_row_ptr, &incX,
                     &beta,
                     y_ptr, &bl_incY)
+
+                x_row_ptr += n_features
 
     print('%f' % time() - start_time)
 
