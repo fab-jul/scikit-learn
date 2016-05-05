@@ -108,8 +108,6 @@ def sweep():
         matvsvec(n_components=n_components)
 
 
-def make_matlab(s):
-    pass
 
 
 def matvsvec(n_samples = 5000, n_features=1000, n_components=2000):
@@ -137,7 +135,7 @@ cdef matvec(int n_samples, int n_features, int n_components):
     cdef double alpha, beta
 
     cdef int row
-    cdef double first_cols_summed
+    cdef double tmp
 
     m = n_features; n = n_components; lda = m; incX = 1; incY = 1;
     alpha = 1; beta = 0;
@@ -154,6 +152,12 @@ cdef matvec(int n_samples, int n_features, int n_components):
                     x_row_ptr, &incX,
                     &beta,
                     y_ptr, &incY)
+
+#                tmp = 0
+#                for i in range(n_components):
+#                    tmp += y_ptr[i]
+#                with gil:
+#                    print tmp
 
                 x_row_ptr += n_features
 
@@ -182,6 +186,8 @@ cdef matmat(int n_samples, int n_features, int n_components):
     alpha = 1; beta = 0;
 
     cdef int row
+    cdef double tmp
+    cdef double* y_ptr
 
     start_time = time()
 
@@ -194,6 +200,10 @@ cdef matmat(int n_samples, int n_features, int n_components):
                 &rw[0,0], &ldb,
                 &beta,
                 &y[0,0], &ldc)
+
+
+    print y
+    print x * rw
 
     print('%f' % (time() - start_time))
 
