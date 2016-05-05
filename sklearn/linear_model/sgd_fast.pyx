@@ -210,7 +210,7 @@ cdef matmat(int n_samples, int n_features, int n_components):
 
     start_time = time()
     cdef np.ndarray r
-    with nogil
+    with nogil:
         for _ in range(n_tests):
             r = safe_sparse_dot(x_data, rw_data)
     print('%f' % (time() - start_time))
