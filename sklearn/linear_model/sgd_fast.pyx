@@ -83,7 +83,7 @@ def matvsvec():
 
 
 cdef matvec():
-    cdef int n_tests = 100
+    cdef int n_tests = 10
 
     cdef int n_samples = 5000
     cdef int n_features = 1000
@@ -105,6 +105,7 @@ cdef matvec():
     cdef double alpha, beta
 
     cdef int row
+    cdef double first_cols_summed
 
     m = n_features; n = n_components; lda = m; incX = 1; incY = 1;
     alpha = 1; beta = 0;
