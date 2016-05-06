@@ -19,23 +19,14 @@ import sys
 from time import time
 
 cimport cython
-from ..utils.extmath import safe_sparse_dot  #fj
 from libc.math cimport exp, log, sqrt, pow, fabs, cos
 cimport numpy as np
 cdef extern from "sgd_fast_helpers.h":
     bint skl_isfinite(double) nogil
 
+## BLAS imports ################################################################
+
 import scipy.linalg.blas
-
-#    enum CBLAS_ORDER:
-#        CblasRowMajor=101
-#        CblasColMajor=102
-#    enum CBLAS_TRANSPOSE:
-#        CblasNoTrans=111
-#        CblasTrans=112
-#        CblasConjTrans=113
-#        AtlasConj=114
-
 from cpython cimport (PY_VERSION_HEX, PyCObject_Check,
     PyCObject_AsVoidPtr, PyCapsule_CheckExact, PyCapsule_GetPointer)
 
@@ -48,46 +39,24 @@ cdef void* f2py_pointer(obj):
             return PyCapsule_GetPointer(obj, NULL);
     raise ValueError("Not an object containing a void ptr")
 
-
-# maybe int return
 ctypedef void dgemv_t(
-	char *trans,
-	int *m, int *n,
-	double *alpha,
-	double *a, int *lda,
+	char *trans, int *m, int *n,
+	double *alpha, double *a, int *lda,
         double *x, int *incX,
-	double *beta,
-	double *y, int *incY) nogil
+	double *beta, double *y, int *incY) nogil
 
 ctypedef void dgemm_t(
-	char *transa, char *transb,
-	int *m, int *n, int *k,
-	double *alpha,
-	double *a, int *lda,
+	char *transa, char *transb, int *m, int *n, int *k,
+	double *alpha, double *a, int *lda,
 	double *b, int *ldb,
-	double *beta,
-	double *c, int *ldc) nogil
+	double *beta, double *c, int *ldc) nogil
 
-# Since Scipy >= 0.12.0
 cdef dgemv_t *dgemv = <dgemv_t*>f2py_pointer(scipy.linalg.blas.dgemv._cpointer)
 cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 
-#cdef extern from "cblas.h":
-#    enum CBLAS_ORDER:
-#        CblasRowMajor=101
-#        CblasColMajor=102
-#    enum CBLAS_TRANSPOSE:
-#        CblasNoTrans=111
-#        CblasTrans=112
-#        CblasConjTrans=113
-#        AtlasConj=114
-#
-#    void dgemv "cblas_dgemv"(CBLAS_ORDER Order,
-#                      CBLAS_TRANSPOSE TransA, int M, int N,
-#                      double alpha, double *A, int lda,
-#                      double *X, int incX, double beta,
-#                      double *Y, int incY) nogil
+## Ugly Testing Code soon hopefully to be deleted ##############################
 
+from ..utils.extmath import safe_sparse_dot  #fj
 
 def sweep():
     def make_range(step):
@@ -107,8 +76,6 @@ def sweep():
     for n_components in make_range(500):
         print n_components
         matvsvec(n_components=n_components)
-
-
 
 
 def matvsvec(n_samples = 5000, n_features=1000, n_components=2000):
@@ -261,9 +228,11 @@ def test():
     print(np.dot(x, a))
 
 
+################################################################################
+
 from sklearn.utils.weight_vector cimport WeightVector
 from sklearn.utils.seq_dataset cimport SequentialDataset
-from sklearn.kernel_approximation import RBFSampler  # FJ just for testing
+from sklearn.kernel_approximation import RBFSampler  # FJ just for debugging
 
 np.import_array()
 
@@ -645,9 +614,8 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         The fitted intercept term.
     """
 #    import line_profiler
-    import sys
 
-    #profile = line_profiler.LineProfiler(_plain_sgd)
+#    profile = line_profiler.LineProfiler(_plain_sgd)
 
 #        _, _ = profile.runcall(_plain_sgd, weights,
     standard_weights, standard_intercept,\
@@ -670,7 +638,7 @@ def plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                           average=0,
                           rbf=rbf)
 #    profile.print_stats()
-    sys.exit(1)
+
     return standard_weights, standard_intercept
 
 
@@ -805,17 +773,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                 average_weights.shape[0] == rbf.n_components),\
                 'average_weights vector not scaled appropriately for RBF'
 
-    # BLAS
-#    cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
-#    cdef double bl_alpha, bl_beta
-##    cdef double* rbf_random_weights_ptr = &rbf.random_weights_[0, 0]
-
-#    cdef np.ndarray[double, ndim=2, mode='c'] rbf_random_weights_
-#    cdef double* rbf_random_weights_ptr_
-#    if rbf is not None:
-#        rbf_random_weights_ = rbf.random_weights_
-#        rbf_random_weights_ptr_ = <double*>rbf_random_weights_.data
-
     # get the data information into easy vars
     cdef Py_ssize_t n_samples = dataset.n_samples
     cdef Py_ssize_t n_features = weights.shape[0]
@@ -838,17 +795,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef np.ndarray[double, ndim=1, mode='c'] _x_data_rbf
     cdef np.ndarray[int, ndim=1, mode='c'] _x_ind_rbf
 
-### HAND INLINED ####
-    # current column in random_weights_
-    cdef int col
-
-    # current component when doing multiplication, see below
-    cdef int idx
-
-    # holds value for x_i * random_weights_[:, col] before it gets written
-    cdef double out_val
-### / HAND INLINED ####
-
     # helper variables
     cdef bint infinity = False
     cdef double eta = 0.0
@@ -861,7 +807,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     cdef unsigned int count = 0
     cdef unsigned int epoch = 0
     cdef unsigned int i = 0
-    cdef unsigned int j # FJ for debugging
     cdef int is_hinge = isinstance(loss, Hinge)
     cdef double optimal_init = 0.0
     cdef double dloss = 0.0
@@ -893,7 +838,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         optimal_init = 1.0 / (initial_eta0 * alpha)
 
     t_start = time()
-    t_per_hundred = time()
 
     if rbf is not None:
         # if there is an RBF, this is the memory that holds the current
@@ -906,26 +850,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
         x_ind_rbf_ptr = <int*>_x_ind_rbf.data
         xnnz_rbf = rbf.n_components
 
-#    # BLAS
-#    bl_m = n_samples
-#    bl_n = rbf.n_components
-#    bl_lda = bl_m
-#    bl_incX = 1
-#    bl_incY = 1
-#    bl_alpha = 1.0
-#    bl_beta = 1.0
-
-#    print '%d %d %d %d %d %f %f' % (
-#            bl_m, bl_n, bl_lda, bl_incX, bl_incY, bl_alpha, bl_beta)
-#
-#    cdef object random_state = np.random.RandomState()
-#    cdef double[::1,:] a
-#    a = np.asarray(np.sqrt(2 * 0.7) *
-#        random_state.normal(size=(n_samples, rbf.n_components)),
-#        dtype=np.double, order='F')
-
-#    cdef double* rbf_random_weights_ptr = &a[0, 0]
-
     with nogil:
         for epoch in range(n_iter):
             if verbose > 0:
@@ -933,63 +857,19 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
                     print("-- Epoch %d" % (epoch + 1))
             if shuffle:
                 dataset.shuffle(seed)
-            for i in range(min(n_samples, 101)):
-                if i % 10 == 0:
-                    with gil:
-                        print('%i: %f' % (i, time() - t_per_hundred))
-                        t_per_hundred = time()
-
+            for i in n_samples:
                 dataset.next(&x_data_ptr, &x_ind_ptr, &xnnz,
                              &y, &sample_weight)
 
-                # update RBF variables
                 if rbf is not None:
-#### BEGIN hand inlined ####
-
-#                    for col in range(rbf.n_components):
-#                        out_val = 0
-#                        for i in range(xnnz):  # 1.
-#                            idx = x_ind_ptr[i]
-#                            out_val += (x_data_ptr[i] *
-#                                    rbf.random_weights_[idx, col])
-#                        out_val += rbf.random_offset_[col]  # 2.
-#                        out_val = cos(out_val)  # 3.
-#                        out_val *= rbf.factor_  # 4.
-#
-#                        x_data_rbf_ptr[col] = out_val
-
                     rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
 
-#                    # setup for gemv
-#                    for col in range(rbf.n_components):
-#                        x_data_rbf_ptr[col] = rbf.random_offset_[col]
-#
-#                    dgemv('T',  # Transpose please
-#                        &bl_m, &bl_n, &bl_alpha,
-#                        rbf_random_weights_ptr, &bl_lda,
-##                        rbf.random_weights_ptr_, &bl_lda,
-#                        x_data_ptr, &bl_incX,
-#                        &bl_beta,
-#                        x_data_rbf_ptr, &bl_incY)
-#
-#                    for col in range(rbf.n_components):
-#                        x_data_rbf_ptr[col] = (rbf.factor_ *
-#                                cos(x_data_rbf_ptr[col]))
-
-
-#### END   hand inlined ####
                 else:
                     x_data_rbf_ptr = x_data_ptr
                     x_ind_rbf_ptr = x_ind_ptr
                     xnnz_rbf = xnnz
 
                 p = w.dot(x_data_rbf_ptr, x_ind_rbf_ptr, xnnz_rbf) + intercept
-
-                if verbose > 1:
-                    with gil:
-                        print 'x: %s' % (' '.join(str(x_data_rbf_ptr[j])
-                                         for j in range(xnnz_rbf)[:10]))
-                        print 'wTx + %i= %f' % (intercept, p)
 
                 if learning_rate == OPTIMAL:
                     eta = 1.0 / (alpha * (optimal_init + t - 1))
@@ -1086,44 +966,6 @@ def _plain_sgd(np.ndarray[double, ndim=1, mode='c'] weights,
     return weights, intercept, average_weights, average_intercept
 
 
-#def test_dot(X, rw):
-#    return _test_dot(X, rw)
-#
-#
-#cdef object _test_dot(
-#        np.ndarray[double, ndim = 2, mode = "c"] X,
-#        np.ndarray[double, ndim = 2, mode = "c"] rw):
-#    cdef int n_components = rw.shape[1]
-#    cdef int n_features = rw.shape[0]
-#    cdef float gamma = 1
-#    cdef double* x_data_ptr = <double*>X.data
-#    cdef np.ndarray[int, ndim = 1, mode = "c"] x_ind = np.arange(n_features, dtype=np.intc)
-#    print x_ind
-#
-#    cdef int* x_ind_ptr = <int*>x_ind.data
-#    cdef int xnnz = n_features
-#
-#    cdef np.ndarray[double, ndim = 1, mode = "c"] x_data_rbf = np.zeros(n_components)
-#    cdef double* x_data_rbf_ptr = <double*>x_data_rbf.data
-#
-#    cdef int i
-#
-#    cdef RBFSamplerInPlace rbf = RBFSamplerInPlace(gamma, n_components)
-#    rbf.random_weights_ = rw
-#    rbf.random_offset_ = np.zeros(n_components)
-#    rbf.factor_ = np.sqrt(2.) / np.sqrt(n_components)
-#
-#    with nogil:
-#        rbf.transform(x_data_ptr, x_ind_ptr, xnnz, x_data_rbf_ptr)
-#
-#    print 'output RBF'
-#    for i in range(n_components):
-#        print x_data_rbf[i]
-#
-#    real_rbf = rbf.get_RBFSampler()
-#    return real_rbf
-#
-
 cdef class RBFSamplerInPlace:
     cdef public float gamma
     cdef public int n_components
@@ -1168,51 +1010,51 @@ cdef class RBFSamplerInPlace:
         4. projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         """
 
-#        cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
-#        cdef double bl_alpha, bl_beta
-#
-#        bl_m = xnnz
-#        bl_n = self.n_components
-#        bl_lda = bl_m
-#        bl_incX = 1
-#        bl_incY = 1
-#        bl_alpha = 1.0
-#        bl_beta = 1.0
-#
-#        # setup for gemv
-#        for col in range(self.n_components):
-#            x_data_rbf_ptr[col] = self.random_offset_[col]
-#
-#        dgemv('T',  # Transpose please
-#            &bl_m, &bl_n, &bl_alpha,
-#            self.random_weights_ptr_, &bl_lda,
-#            x_data_ptr, &bl_incX,
-#            &bl_beta,
-#            x_data_rbf_ptr, &bl_incY)
-#
-#        for col in range(self.n_components):
-#            x_data_rbf_ptr[col] = self.factor_ * cos(x_data_rbf_ptr[col])
+        cdef int bl_m, bl_n, bl_lda, bl_incX, bl_incY
+        cdef double bl_alpha, bl_beta
 
-        # current column in random_weights_
-        cdef int col
+        bl_m = xnnz
+        bl_n = self.n_components
+        bl_lda = bl_m
+        bl_incX = 1
+        bl_incY = 1
+        bl_alpha = 1.0
+        bl_beta = 1.0
 
-        # current component when doing multiplication, see below
-        cdef int idx
-
-        # holds value for x_i * random_weights_[:, col] before it gets written
-        cdef double out_val
-
-        # iterate over columns of random_weights_
+        # setup for gemv
         for col in range(self.n_components):
-            out_val = 0
-            for i in range(xnnz):  # 1.
-                idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
-                out_val += x_data_ptr[i] * self.random_weights_[idx, col]
-            out_val += self.random_offset_[col]  # 2.
-            out_val = cos(out_val)  # 3.
-            out_val *= self.factor_  # 4.
+            x_data_rbf_ptr[col] = self.random_offset_[col]
 
-            x_data_rbf_ptr[col] = out_val
+        dgemv('T',  # Transpose please
+            &bl_m, &bl_n, &bl_alpha,
+            self.random_weights_ptr_, &bl_lda,
+            x_data_ptr, &bl_incX,
+            &bl_beta,
+            x_data_rbf_ptr, &bl_incY)
+
+        for col in range(self.n_components):
+            x_data_rbf_ptr[col] = self.factor_ * cos(x_data_rbf_ptr[col])
+
+#        # current column in random_weights_
+#        cdef int col
+#
+#        # current component when doing multiplication, see below
+#        cdef int idx
+#
+#        # holds value for x_i * random_weights_[:, col] before it gets written
+#        cdef double out_val
+#
+#        # iterate over columns of random_weights_
+#        for col in range(self.n_components):
+#            out_val = 0
+#            for i in range(xnnz):  # 1.
+#                idx = x_ind_ptr[i]  # index of the i-th non-zero element of x
+#                out_val += x_data_ptr[i] * self.random_weights_[idx, col]
+#            out_val += self.random_offset_[col]  # 2.
+#            out_val = cos(out_val)  # 3.
+#            out_val *= self.factor_  # 4.
+#
+#            x_data_rbf_ptr[col] = out_val
 
     def transform_and_multiply_mat(self, dataset, coef, Y):
         n_samples = dataset.n_samples
@@ -1321,3 +1163,4 @@ cdef void l1penalty(WeightVector w, double * q_data_ptr,
                 0.0, w_data_ptr[idx] + ((u - q_data_ptr[idx]) / wscale))
 
         q_data_ptr[idx] += wscale * (w_data_ptr[idx] - z)
+
