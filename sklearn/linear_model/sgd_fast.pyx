@@ -57,6 +57,36 @@ cdef dgemm_t *dgemm = <dgemm_t*>f2py_pointer(scipy.linalg.blas.dgemm._cpointer)
 ## Ugly Testing Code soon hopefully to be deleted ##############################
 
 from ..utils.extmath import safe_sparse_dot  #fj
+from sklearn.kernel_approximation import RBFSampler  # FJ just for debugging
+
+from contextlib import contextmanager
+from time import time as get_time
+
+@contextmanager
+def timer(fun_name):
+    print('Starting %s...' % fun_name)
+    start = get_time()
+    yield
+    print('%s: %f' % (fun_name, (get_time() - start)))
+
+
+def investigate_RBF():
+    n_samples = 800000
+    n_features = 2000
+    n_components = 10000
+
+    with timer('Will make X...'):
+        X = np.random.rand(n_samples, n_features)
+
+    with timer('Will make rbf...'):
+        rbf = RBFSampler(1., n_components)
+
+    with timer('Will fit rbf...'):
+        rbf.fit(X)
+
+    with timer('Will transform...'):
+        rbf.transform()
+
 
 def sweep():
     def make_range(step):
@@ -232,7 +262,7 @@ def test():
 
 from sklearn.utils.weight_vector cimport WeightVector
 from sklearn.utils.seq_dataset cimport SequentialDataset
-from sklearn.kernel_approximation import RBFSampler  # FJ just for debugging
+#from sklearn.kernel_approximation import RBFSampler  # FJ just for debugging
 
 np.import_array()
 
