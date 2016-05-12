@@ -76,7 +76,7 @@ def investigate_RBF():
     n_components = 10000
 
     with timer('Will make X...'):
-        X = np.random.rand(n_samples, n_features)
+        X = np.asarray(np.random.rand(n_samples, n_features), dtype=np.float64)
 
     with timer('Will make rbf...'):
         rbf = RBFSampler(1., n_components)
@@ -84,8 +84,20 @@ def investigate_RBF():
     with timer('Will fit rbf...'):
         rbf.fit(X)
 
+    with timer('Will make output matrix...'):
+        out = np.zeros((n_samples, n_features), dtype=np.float64)
+
+    with timer('Will fast transform...'):
+        rbf.transform_fast(X, out)
+
+    print out
+    out = None
+
     with timer('Will transform...'):
-        rbf.transform(X)
+        out = rbf.transform(X)
+
+    print out
+
 
 
 def sweep():

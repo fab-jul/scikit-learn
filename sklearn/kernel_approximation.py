@@ -108,6 +108,13 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         return projection
 
+    def transform_fast(self, X, out):
+        np.multiply(X, self.random_weights_, out)
+        np.add(out, self.random_offset_, out)
+        np.cos(out, out)
+        np.multiply(out, np.sqrt(2.) / np.sqrt(self.n_components), out)
+
+
 
 class SkewedChi2Sampler(BaseEstimator, TransformerMixin):
     """Approximates feature map of the "skewed chi-squared" kernel by Monte
