@@ -85,7 +85,7 @@ def investigate_RBF():
         rbf.fit(X)
 
     with timer('Will transform...'):
-        rbf.transform()
+        rbf.transform(X)
 
 
 def sweep():
