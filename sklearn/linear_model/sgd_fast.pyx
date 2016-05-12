@@ -86,6 +86,7 @@ def investigate_RBF():
 
     with timer('Will make output matrix...'):
         out = np.zeros((n_samples, n_components), dtype=np.float64)
+        out.fill(-1)
 
     with timer('Will fast transform...'):
         rbf.transform_fast(X, out)
