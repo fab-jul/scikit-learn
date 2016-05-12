@@ -109,7 +109,7 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         return projection
 
     def transform_fast(self, X, out):
-        np.multiply(X, self.random_weights_, out)
+        np.dot(X, self.random_weights_, out)
         np.add(out, self.random_offset_, out)
         np.cos(out, out)
         np.multiply(out, np.sqrt(2.) / np.sqrt(self.n_components), out)
