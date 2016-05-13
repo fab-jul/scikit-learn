@@ -108,12 +108,25 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         return projection
 
-    def transform_fast(self, X, out):
-        print('1'); np.dot(X, self.random_weights_, out)
-        print('2'); np.add(out, self.random_offset_, out)
-        print('3'); np.cos(out, out)
-        print('4'); np.multiply(out, np.sqrt(2.) / np.sqrt(self.n_components), out)
+    def transform_fast(self, X, out, use_ne=False):
+        if use_ne:
+            try:
+                import numexpr as ne
+                ne.set_num_threads(20)
+            except ImportError:
+                print('Could not find numexpr, cosine probably slow...')
+                use_ne = False
 
+        np.dot(X, self.random_weights_, out)
+        np.add(out, self.random_offset_, out)
+
+        if use_ne:
+            ne.evaluate('cos(out)', out=out)
+        else:
+            np.cos(out, out)
+
+        np.cos(out, out)
+        np.multiply(out, np.sqrt(2.) / np.sqrt(self.n_components), out)
 
 
 class SkewedChi2Sampler(BaseEstimator, TransformerMixin):
