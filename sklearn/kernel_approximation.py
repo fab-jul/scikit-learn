@@ -117,15 +117,15 @@ class RBFSampler(BaseEstimator, TransformerMixin):
                 print('Could not find numexpr, cosine probably slow...')
                 use_ne = False
 
-        np.dot(X, self.random_weights_, out)
-        np.add(out, self.random_offset_, out)
+        print('dot'); np.dot(X, self.random_weights_, out)
+        print('add'); np.add(out, self.random_offset_, out)
 
         if use_ne:
             ne.evaluate('cos(out)', out=out)
         else:
             np.cos(out, out)
 
-        np.cos(out, out)
+        print('mul')
         np.multiply(out, np.sqrt(2.) / np.sqrt(self.n_components), out)
 
 

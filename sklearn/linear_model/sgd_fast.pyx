@@ -88,11 +88,11 @@ def investigate_RBF():
         out = np.zeros((n_samples, n_components), dtype=np.float64)
         out.fill(-1)
 
-    with timer('Will fast transform...'):
-        rbf.transform_fast(X, out)
-
     with timer('Will fast transform w/ ne...'):
         rbf.transform_fast(X, out, use_ne=True)
+
+    with timer('Will fast transform...'):
+        rbf.transform_fast(X, out)
 
 
     print out
