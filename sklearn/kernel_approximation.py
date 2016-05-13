@@ -121,7 +121,8 @@ class RBFSampler(BaseEstimator, TransformerMixin):
 
         print('add')
         if use_ne:
-            ne.evaluate('out + self.random_offset_', out=out)
+            ro = self.random_offset_
+            ne.evaluate('out + ro', out=out)
         else:
             np.add(out, self.random_offset_, out)
 
