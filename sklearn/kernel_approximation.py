@@ -108,31 +108,27 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         projection *= np.sqrt(2.) / np.sqrt(self.n_components)
         return projection
 
-    def transform_fast(self, X, out, use_ne=False):
-        if use_ne:
-            try:
-                import numexpr as ne
-                ne.set_num_threads(20)
-            except ImportError:
-                print('Could not find numexpr, cosine probably slow...')
-                use_ne = False
+    def transform_fast(self, X, out):
+        """ out is where the result is stored. Must be of the correct size """
+        try:
+            import numexpr as ne
+            ne.set_num_threads(ne.detect_number_of_cores())
+        except ImportError:
+            print('Could not find numexpr, cosine probably slow...')
+            ne = None
 
-        print('dot'); np.dot(X, self.random_weights_, out)
+        # fast becaus BLAS
+        np.dot(X, self.random_weights_, out)
 
-        print('add')
-        if use_ne:
+        if ne is not None:
             ro = self.random_offset_
             ne.evaluate('out + ro', out=out)
-        else:
-            np.add(out, self.random_offset_, out)
-
-        print('cos')
-        if use_ne:
             ne.evaluate('cos(out)', out=out)
         else:
+            np.add(out, self.random_offset_, out)
             np.cos(out, out)
 
-        print('mul')
+        # fast anyways, maybe also BLAS
         np.multiply(out, np.sqrt(2.) / np.sqrt(self.n_components), out)
 
 
