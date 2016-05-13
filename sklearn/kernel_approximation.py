@@ -118,8 +118,14 @@ class RBFSampler(BaseEstimator, TransformerMixin):
                 use_ne = False
 
         print('dot'); np.dot(X, self.random_weights_, out)
-        print('add'); np.add(out, self.random_offset_, out)
 
+        print('add')
+        if use_ne:
+            ne.evaluate('out + self.random_offset_', out=out)
+        else:
+            np.add(out, self.random_offset_, out)
+
+        print('cos')
         if use_ne:
             ne.evaluate('cos(out)', out=out)
         else:
