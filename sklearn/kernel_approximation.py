@@ -131,6 +131,11 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         # fast anyways, maybe also BLAS
         np.multiply(out, np.sqrt(2.) / np.sqrt(self.n_components), out)
 
+    def size_after_transform(self, X):
+        """ Returns size of matrix required to hold rbf.transform(X) """
+        (n_samples, _) = X.shape
+        return (n_samples, self.n_components)
+
 
 class SkewedChi2Sampler(BaseEstimator, TransformerMixin):
     """Approximates feature map of the "skewed chi-squared" kernel by Monte
