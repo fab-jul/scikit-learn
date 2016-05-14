@@ -89,7 +89,7 @@ def investigate_RBF():
         out.fill(-1)
 
     with timer('Will fast transform w/ ne...'):
-        rbf.transform_fast(X, out, use_ne=True)
+        rbf.transform_fast(X, out)
 
 #    with timer('Will fast transform...'):
 #        rbf.transform_fast(X, out)
