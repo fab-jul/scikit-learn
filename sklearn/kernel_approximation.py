@@ -76,8 +76,11 @@ class RBFSampler(BaseEstimator, TransformerMixin):
         """
 
         X = check_array(X, accept_sparse='csr')
+        return self.fit_fast(n_features=X.shape[1])
+
+    def fit_fast(self, n_features):
+        """Fit the model with the number of features of a sample. """
         random_state = check_random_state(self.random_state)
-        n_features = X.shape[1]
 
         self.random_weights_ = (np.sqrt(2 * self.gamma) * random_state.normal(
             size=(n_features, self.n_components)))
